@@ -1,4 +1,4 @@
-# Guia de teste: replicar os principais pontos do projeto
+# Plano de teste funcional: onboarding-agent
 
 > **Em resumo:** um roteiro prático para ver, com os próprios olhos, cada comportamento importante
 > do sistema: o Curador gerando material, a revisão humana, o Tutor ensinando, a memória entre
@@ -6,8 +6,12 @@
 > pessoais, as lacunas e os evals. Cada passo diz **o que fazer**, **o que esperar** e **como
 > comprovar** olhando os dados.
 
-Tempo total: cerca de 60 minutos (ou 40 minutos sem as partes opcionais). Custo: alguns centavos de
-crédito do Gemini.
+O fluxo completo leva cerca de 60 minutos e usa o Gemini; os testes automatizados não chamam o
+modelo. Para uma rodada rápida, execute as etapas 0, 3, 5, 7, 8 e 10.
+
+**Registro da rodada:** anote data, branch/commit, responsável, resultado (`PASSOU`, `FALHOU` ou
+`NÃO EXECUTADO`) e IDs das evidências. Em caso de falha, registre o passo, o esperado, o observado e
+o user ID/material usado. Não use dados reais de colaboradores.
 
 **Sumário:**
 [0. Preparação](#0-preparação) ·
@@ -19,8 +23,9 @@ crédito do Gemini.
 [6. Buddy](#6-o-buddy-recebe-o-que-precisa-de-uma-pessoa) ·
 [7. Dados pessoais](#7-dados-pessoais-são-mascarados-antes-de-gravar) ·
 [8. Lacunas](#8-dúvidas-sem-resposta-viram-lacunas) ·
-[9. Evals](#9-evals-detectam-regressões) ·
-[10. Limpeza](#10-limpeza) ·
+[9. Operação](#9-operação-do-responsável-e-do-autor) ·
+[10. Evals](#10-evals-detectam-regressões) ·
+[11. Limpeza](#11-limpeza) ·
 [Checklist](#checklist-final)
 
 ---
@@ -34,10 +39,10 @@ crédito do Gemini.
 | `teste.buddy` | Buddy da Ana |
 | `teste.revisor` | Quem aprova os materiais |
 
-Todos os comandos rodam na pasta do projeto:
+Todos os comandos rodam na pasta do agente ADK:
 
 ```bash
-cd /Users/andre/workspace_github/onboarding-agent
+cd onboarding-agent
 ```
 
 ---
@@ -53,6 +58,9 @@ make check
 
 **Esperar:** testes passando e `tudo certo ✓`. Se ainda não instalou, veja o
 [guia do responsável](1-responsavel-pelo-piloto.md#1-instalar-uma-vez).
+
+**Registrar:** versão do Python, commit, provedor/modelo e resultado. `make test` cobre regras
+determinísticas; `make eval` (etapa 10) cobre o comportamento com o modelo real.
 
 **Fazer:** veja o estado dos materiais.
 
@@ -140,6 +148,11 @@ Depois descarte esse rascunho.
 
 **Também vale ver:** o `edit` abre texto e perguntas juntos no editor, e salva uma nova versão sem
 apagar a anterior. Detalhes no [guia do revisor](3-revisor.md#b-ajuste-pontual-edite).
+
+**Cobertura administrativa adicional:** em um rascunho descartável, confira `list`, `show`, `edit`,
+`discard` e `stale`. Confirme que `edit` cria versão nova, `discard` registra responsável e motivo,
+`stale <fonte>` tira de uso materiais que citam a fonte e `approve` publica o rascunho selecionado.
+Não use material de produção como alvo desses testes.
 
 ---
 
@@ -358,7 +371,32 @@ a GMUD, que tinha resposta.
 
 ---
 
-## 9. Evals detectam regressões
+**Ciclo de vida da lacuna:** anote o ID mostrado em `make gaps`, encerre-a com
+`.venv/bin/python scripts/approve.py resolve-gap <id>` e confirme que ela não aparece mais. Faça
+isso somente com a lacuna criada para o teste.
+
+---
+
+## 9. Operação do responsável e do autor
+
+Execute os testes aplicáveis. Para criação/validação de papéis, use uma cópia descartável do
+repositório, pois `make new-role` grava em `data/roles/`.
+
+| Ação | Fazer | Esperado / evidência |
+|---|---|---|
+| Validar conteúdo | `make check` | Papéis e documentos passam; erros apontam o arquivo e o problema. |
+| Criar papel | `make new-role ID=qa_temporario TITLE="QA temporário" FROM=dev_salesforce` | Cria YAML sem sobrescrever papel existente, com módulos copiados e instruções de edição. |
+| Validar configuração inválida | Na cópia descartável, introduza um TODO ou tag/pré-requisito inválido e rode `make check` | A validação acusa o problema; após corrigir, volta a passar. |
+| Consultar tutorado | `.venv/bin/python scripts/user_data.py show teste.ana` | Papel, progresso, quiz, buddy, sessões e pedidos refletem os passos anteriores. |
+| Ver filas | `make inbox` | Mostra pedidos, tutorados sem buddy, rascunhos e lacunas. |
+| Fazer backup | `make backup` | Imprime o diretório criado em `backups/`; confira as cópias SQLite. Não restaure sobre dados ativos neste roteiro. |
+| Apagar dados de teste | Execute na etapa 11: `.venv/bin/python scripts/user_data.py reset teste.ana --forget` | Apaga sessões, progresso, memória, lacunas, pedidos e buddy só do usuário de teste. Confirme com `show` e `inbox`. |
+
+**Interface web (opcional):** rode `make web`, abra a UI do ADK e converse com um ID de teste.
+Confirme que o app Tutor inicia, as ferramentas aparecem no trace e a entrada com PII é mascarada.
+Encerre com `Ctrl-C`. A UI não tem autenticação; mantenha o teste na rede controlada.
+
+## 10. Evals detectam regressões
 
 **O ponto:** o comportamento dos passos 3 a 8 é verificado automaticamente, com o modelo real, numa
 base de teste que não toca os dados reais.
@@ -399,7 +437,7 @@ não fez. Por isso o padrão é `TUTOR_THINKING_BUDGET=1024`.
 
 ---
 
-## 10. Limpeza
+## 11. Limpeza
 
 Apague os dados dos personagens de teste (pare o `make chat` antes):
 
@@ -433,7 +471,8 @@ make inbox
 | 6 | Buddy pelo nome, só com consentimento; fila por buddy; fila SEM BUDDY | 6 | ☐ |
 | 7 | CPF e telefone mascarados antes de gravar | 7 | ☐ |
 | 8 | Não inventa; dúvida sem resposta vira lacuna; resposta com fonte | 8 | ☐ |
-| 9 | Evals passam; thinking desligado reproduz a regressão | 9 | ☐ |
+| 9 | Lacunas podem ser resolvidas; filas, backup e operações administrativas conferidos | 8–9 | ☐ |
+| 10 | Evals passam; thinking desligado reproduz a regressão | 10 | ☐ |
 
 Se algo não se comportar como esperado, veja os
 [problemas comuns](1-responsavel-pelo-piloto.md#11-problemas-comuns) e rode `make eval-report`.

@@ -10,7 +10,7 @@ guia abaixo é escrito para uma dessas pessoas e cobre só o que ela precisa faz
 | 3 | [Revisor](3-revisor.md) | Quem garante a qualidade dos materiais | Confere texto e perguntas do quiz contra a base; aprova, corrige ou devolve |
 | 4 | [Buddy](4-buddy.md) | Colega que acompanha cada novo colaborador | Acompanha o progresso dos seus tutorados e atende os pedidos que o Tutor encaminha |
 | 5 | [Tutorado](5-tutorado.md) | Novo colaborador | Faz o onboarding conversando com o Tutor |
-| 6 | [Guia de teste](6-guia-de-teste.md) | Quem quer ver o sistema funcionando | Roteiro prático para replicar e comprovar cada comportamento importante |
+| 6 | [Plano de teste funcional](6-guia-de-teste.md) | Quem valida o sistema | Roteiro estruturado para testar fluxos, operações, guardrails e evals, com evidências |
 
 ## Por onde começar
 
