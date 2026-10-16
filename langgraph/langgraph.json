@@ -1,0 +1,8 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "tutor": "./src/onboarding_lg/studio.py:tutor",
+    "curator": "./src/onboarding_lg/studio.py:curator"
+  },
+  "env": ".env"
+}

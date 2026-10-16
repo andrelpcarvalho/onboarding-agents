@@ -1,0 +1,38 @@
+id: dev_salesforce
+title: Desenvolvedor(a) Salesforce
+description: Desenvolvimento Apex/LWC e entrega via pipeline de CI/CD com release branch.
+buddy_contact: "#onboarding-dev no Slack"
+modules:
+  - id: cultura_empresa
+    title: Cultura e forma de trabalhar
+    objectives:
+      - Entender os valores da empresa e como eles aparecem no dia a dia
+      - Conhecer os rituais do time (daily, review, retro)
+    kb_tags: [cultura, valores, rituais]
+    estimated_minutes: 20
+
+  - id: acessos_ferramentas
+    title: Acessos e ferramentas
+    objectives:
+      - Saber quais acessos solicitar no primeiro dia e por qual canal
+      - Configurar o ambiente local (sf CLI, VS Code, Git)
+    kb_tags: [acessos, ferramentas, ambiente]
+    estimated_minutes: 30
+
+  - id: seguranca_informacao
+    title: Segurança da informação
+    objectives:
+      - Conhecer as regras de manuseio de dados de clientes
+      - Saber como reportar um incidente
+    kb_tags: [seguranca, lgpd, incidente]
+    estimated_minutes: 20
+
+  - id: pipeline_deploy
+    title: Pipeline de deploy Salesforce
+    objectives:
+      - Entender o modelo de release branch e o fluxo feature -> UAT -> PRD
+      - Saber o que é a GMUD e quando ela é exigida
+      - Saber como funciona o rollback de produção
+    kb_tags: [deploy, release, gmud, rollback, pipeline]
+    prerequisites: [acessos_ferramentas]
+    estimated_minutes: 45
