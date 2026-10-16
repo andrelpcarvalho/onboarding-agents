@@ -1,4 +1,4 @@
-"""Pipeline completo PDF → pacote, e exportação do pacote para o onboarding-agents.
+"""Pipeline completo PDF → pacote, e exportação do pacote para o onboarding-agent.
 
 Pacote (out/<papel>-<data-hora>/):
     kb/*.md            base de conhecimento extraída do PDF
@@ -125,20 +125,20 @@ def render_report(m: dict, role: Role) -> str:
     lines += ["", "## 4. Próximos passos", "",
               "1. Revise `kb/` contra o PDF (comece pelas seções da tabela 1).",
               "2. Revise `roles/*.yaml` (objetivos, ordem, `buddy_contact`).",
-              ("3. Exporte para o onboarding-agents: "
-              "`python scripts/export_package.py <pacote> <caminho do onboarding-agents>`."),
-              ("4. No onboarding-agents: `make check`, depois revise e aprove cada rascunho "
+              ("3. Exporte para o onboarding-agent: "
+              "`python scripts/export_package.py <pacote> <caminho do onboarding-agent>`."),
+              ("4. No onboarding-agent: `make check`, depois revise e aprove cada rascunho "
               "(`scripts/approve.py list`).")]
     return "\n".join(lines) + "\n"
 
 
 def export_package(pkg: Path, target: Path, *, target_catalog: Path | None = None,
                    force: bool = False, log: Log = print) -> dict:
-    """Copia base e trilha para o onboarding-agents e importa os materiais como RASCUNHO."""
+    """Copia base e trilha para o onboarding-agent e importa os materiais como RASCUNHO."""
     kb_src, roles_src = pkg / "kb", pkg / "roles"
     kb_dst, roles_dst = target / "data" / "kb", target / "data" / "roles"
     if not kb_dst.is_dir() or not roles_dst.is_dir():
-        raise ValueError(f"{target} não parece o onboarding-agents (falta data/kb ou data/roles)")
+        raise ValueError(f"{target} não parece o onboarding-agent (falta data/kb ou data/roles)")
     pairs = [(f, kb_dst / f.name) for f in sorted(kb_src.glob("*.md"))]
     pairs += [(f, roles_dst / f.name) for f in sorted(roles_src.glob("*.yaml"))]
     conflicts = [str(d.relative_to(target)) for _, d in pairs if d.exists()]

@@ -27,7 +27,7 @@ Os outros papéis têm guias próprios: [autor](2-autor-de-conteudo.md), [reviso
 Requer Python 3.11 e acesso ao Gemini (Vertex AI ou chave do AI Studio).
 
 ```bash
-cd onboarding-agents
+cd onboarding-agent
 make setup          # .venv, dependências, modelo de português do spaCy e .env a partir do exemplo
 ```
 

@@ -9,7 +9,7 @@ Exposto por CLI, `adk web` e A2A.
 - Nada é aprovado aqui. A exportação (`export_package`) grava em outro projeto e **não** pode virar
   tool do agente: é decisão humana.
 - O formato de `kb/*.md`, `roles/*.yaml` e `catalog.db` precisa continuar compatível com o
-  onboarding-agents (`schemas.py`, `storage.py` e `quiz_bank.py` são cópias de lá).
+  onboarding-agent (`schemas.py`, `storage.py` e `quiz_bank.py` são cópias de lá).
 - A linha de título `# ...` dos `.md` gerados carrega o comentário de origem; não coloque texto
   solto antes da primeira seção `##` (viraria uma seção citável).
 - Prompts em `prompts.py`, em pt-BR. Toda mudança neles: rode a importação do

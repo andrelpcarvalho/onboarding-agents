@@ -63,7 +63,7 @@ def check_grounding(draft: KnowledgeBaseDraft, pdf_text: str) -> list[SectionChe
 
 
 def write_kb(draft: KnowledgeBaseDraft, kb_dir: Path, source_name: str) -> list[Path]:
-    """Grava um .md por documento, no formato que o onboarding-agents usa."""
+    """Grava um .md por documento, no formato que o onboarding-agent usa."""
     kb_dir.mkdir(parents=True, exist_ok=True)
     written, used = [], set()
     for doc in draft.documents:
@@ -72,7 +72,7 @@ def write_kb(draft: KnowledgeBaseDraft, kb_dir: Path, source_name: str) -> list[
             slug += "_2"
         used.add(slug)
         # O comentário fica NA LINHA DO TÍTULO: os parsers da base (aqui e no
-        # onboarding-agents) ignoram a linha "# ...", então ele não vira uma seção citável.
+        # onboarding-agent) ignoram a linha "# ...", então ele não vira uma seção citável.
         title = (f"# {doc.title.strip()} <!-- gerado pelo onboarding-curator a partir de "
                  f"{source_name}; revise -->")
         lines = [title, ""]

@@ -68,7 +68,7 @@ def test_trilha_validada_sem_llm(tmp_path):
 
 
 def test_exporta_para_projeto_destino_como_rascunho(tmp_path):
-    pkg, target = tmp_path / "pkg", tmp_path / "onboarding-agents"
+    pkg, target = tmp_path / "pkg", tmp_path / "onboarding-agent"
     (target / "data" / "kb").mkdir(parents=True)
     (target / "data" / "roles").mkdir(parents=True)
     write_kb(draft(), pkg / "kb", "manual.pdf")

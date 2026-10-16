@@ -1,5 +1,5 @@
 """Base de conhecimento em Markdown (um arquivo por assunto, seções `##`) com busca por
-palavra-chave. Mesmo formato e mesma busca do onboarding-agents, mas parametrizada por
+palavra-chave. Mesmo formato e mesma busca do onboarding-agent, mas parametrizada por
 diretório (cada pacote gerado tem a sua base)."""
 
 from __future__ import annotations

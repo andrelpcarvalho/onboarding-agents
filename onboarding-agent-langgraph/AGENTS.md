@@ -1,6 +1,6 @@
 # AGENTS.md: contexto para agentes de código
 
-Variante em **LangGraph 1.2** do onboarding-agents (Google ADK). Mesmo comportamento; ver
+Variante em **LangGraph 1.2** do onboarding-agent (Google ADK). Mesmo comportamento; ver
 `docs/MIGRACAO-ADK-LANGGRAPH.md` para o mapa de conceitos.
 
 ## Regras

@@ -1,6 +1,6 @@
-# onboarding-agents-langgraph
+# onboarding-agent-langgraph
 
-**O mesmo onboarding multiagente do [onboarding-agents](../onboarding-agents), reescrito em
+**O mesmo onboarding multiagente do [onboarding-agent](../onboarding-agent), reescrito em
 LangGraph.** Um Tutor que ensina e acompanha cada colaborador e um Curador que prepara os
 materiais, sempre com revisão humana.
 
@@ -64,7 +64,7 @@ Configure o `.env` (Vertex AI ou `GOOGLE_API_KEY`), como na versão ADK.
 formato:
 
 ```bash
-mkdir -p .lg && sqlite3 ../onboarding-agents/.adk/catalog.db ".backup .lg/catalog.db"
+mkdir -p .lg && sqlite3 ../onboarding-agent/.adk/catalog.db ".backup .lg/catalog.db"
 ```
 
 Ou gere um módulo do zero:
@@ -95,11 +95,11 @@ Os mesmos da versão ADK, com estas diferenças:
 Revisão (`scripts/approve.py`), buddy (`scripts/buddy.py`), visão geral (`make inbox`), dados
 pessoais (`scripts/user_data.py`) e backup funcionam igual. Os guias por persona do projeto
 original valem para esta versão:
-[responsável](../onboarding-agents/docs/1-responsavel-pelo-piloto.md),
-[autor](../onboarding-agents/docs/2-autor-de-conteudo.md),
-[revisor](../onboarding-agents/docs/3-revisor.md),
-[buddy](../onboarding-agents/docs/4-buddy.md),
-[tutorado](../onboarding-agents/docs/5-tutorado.md).
+[responsável](../onboarding-agent/docs/1-responsavel-pelo-piloto.md),
+[autor](../onboarding-agent/docs/2-autor-de-conteudo.md),
+[revisor](../onboarding-agent/docs/3-revisor.md),
+[buddy](../onboarding-agent/docs/4-buddy.md),
+[tutorado](../onboarding-agent/docs/5-tutorado.md).
 
 ---
 

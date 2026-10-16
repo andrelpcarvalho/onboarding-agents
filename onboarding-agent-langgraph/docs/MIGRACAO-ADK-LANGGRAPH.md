@@ -1,6 +1,6 @@
 # Do Google ADK ao LangGraph: o que mudou
 
-Este projeto é o [onboarding-agents](../../onboarding-agents) reescrito em **LangGraph 1.2**, com o
+Este projeto é o [onboarding-agent](../onboarding-agent) reescrito em **LangGraph 1.2**, com o
 mesmo comportamento: Tutor e Curador, progresso e memória persistentes, quiz com nota calculada por
 código, encaminhamento ao buddy, mascaramento de PII, lacunas, revisão humana e evals.
 

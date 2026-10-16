@@ -1,6 +1,6 @@
 # onboarding-curator
 
-**O Curador do [onboarding-agents](../onboarding-agents) como agente isolado: você entrega um PDF
+**O Curador do [onboarding-agent](../onboarding-agent) como agente isolado: você entrega um PDF
 interno e ele gera a base de conhecimento, a trilha do papel e os materiais com banco de perguntas,
 tudo como rascunho para revisão humana.**
 
@@ -21,19 +21,19 @@ flowchart LR
     T --> V[4. Validar trilha<br/>código]
     V --> M[5. Material + perguntas<br/>por módulo, revisor com as fontes]
     M --> P[(Pacote<br/>rascunhos)]
-    P -->|export, decisão humana| OA[onboarding-agents<br/>revisão e aprovação]
+    P -->|export, decisão humana| OA[onboarding-agent<br/>revisão e aprovação]
 ```
 
 | Etapa | Como | Resultado |
 |---|---|---|
-| 1. Extrair a base | O Gemini lê o PDF inteiro (inclusive tabelas e páginas escaneadas), com regras de fidelidade: não acrescentar, manter a força das regras, manter números, sujeito explícito, sem dados pessoais | `kb/*.md` no formato do onboarding-agents |
+| 1. Extrair a base | O Gemini lê o PDF inteiro (inclusive tabelas e páginas escaneadas), com regras de fidelidade: não acrescentar, manter a força das regras, manter números, sujeito explícito, sem dados pessoais | `kb/*.md` no formato do onboarding-agent |
 | 2. Checar fidelidade | **Código, sem LLM:** cada seção é comparada com o texto do PDF (vocabulário, números e palavras de regra que o PDF não tem) | Seções suspeitas no relatório |
 | 3. Propor a trilha | O Gemini monta os módulos (objetivos verificáveis, tags, pré-requisitos) para o papel informado | `roles/<papel>.yaml` |
 | 4. Validar a trilha | **Código:** ids, tags que existem na base, pré-requisitos em ordem, módulos sem cobertura descartados | Avisos no relatório |
 | 5. Gerar materiais | Planejar, escrever, **revisar contra os trechos originais** (até 3 rodadas) e criar 5 a 6 perguntas | Rascunhos no `catalog.db` |
 
-**Nada é aprovado automaticamente.** O pacote vai para o onboarding-agents como rascunho, e lá o
-revisor aprova cada material ([guia do revisor](../onboarding-agents/docs/3-revisor.md)).
+**Nada é aprovado automaticamente.** O pacote vai para o onboarding-agent como rascunho, e lá o
+revisor aprova cada material ([guia do revisor](../onboarding-agent/docs/3-revisor.md)).
 
 ---
 
@@ -45,7 +45,7 @@ make test           # testes sem chamar o modelo
 make sample         # gera examples/manual-qa.pdf (manual fictício para teste)
 ```
 
-Configure o `.env` (Vertex AI ou `GOOGLE_API_KEY`), como no onboarding-agents.
+Configure o `.env` (Vertex AI ou `GOOGLE_API_KEY`), como no onboarding-agent.
 
 ### Importar um PDF (linha de comando)
 
@@ -69,19 +69,19 @@ O pacote sai em `out/<papel>-<data-hora>/`:
 | `catalog.db` | Materiais + bancos de perguntas (rascunhos) |
 | `manifest.json` | Metadados: PDF de origem, modelo, checagens, resultados |
 
-### Levar para o onboarding-agents
+### Levar para o onboarding-agent
 
 Depois de revisar a base e a trilha no pacote:
 
 ```bash
-.venv/bin/python scripts/export_package.py out/analista_qa-<data-hora> ../onboarding-agents
+.venv/bin/python scripts/export_package.py out/analista_qa-<data-hora> ../onboarding-agent
 ```
 
 - Copia `kb/*.md` para `data/kb/` e o YAML para `data/roles/`. **Recusa sobrescrever** arquivos
   existentes, a menos que você passe `--force`.
-- Importa os materiais no catálogo do onboarding-agents **como rascunho**, com a nota "importado do
+- Importa os materiais no catálogo do onboarding-agent **como rascunho**, com a nota "importado do
   onboarding-curator".
-- No onboarding-agents: reinicie `make web`/`make chat`, rode `make check` e aprove os rascunhos com
+- No onboarding-agent: reinicie `make web`/`make chat`, rode `make check` e aprove os rascunhos com
   `scripts/approve.py`.
 
 ### Conversar com o Curador (agente)
@@ -134,7 +134,7 @@ Resultado medido com `gemini-2.5-flash` via Vertex AI:
 | Base | 3 documentos, 11 seções; 11/11 sustentadas pela checagem automática |
 | Trilha | 5 módulos; 2 avisos (tags removidas por não existirem na base) |
 | Materiais | 5/5 gerados, todos aprovados pela revisão automática, todas as fontes válidas |
-| Exportação | `make check` do onboarding-agents passou e os 5 rascunhos apareceram para aprovação |
+| Exportação | `make check` do onboarding-agent passou e os 5 rascunhos apareceram para aprovação |
 | Tempo | ~2 min só base e trilha; ~11 min com os 5 materiais |
 
 **O que a revisão humana ainda precisa olhar:**
@@ -166,7 +166,7 @@ src/curator_agent/
   package.py     pipeline completo, relatório e exportação
   agent.py       agente ADK (tools) para adk web e A2A
   kb.py pdf.py llm.py prompts.py config.py
-  schemas.py storage.py quiz_bank.py   ← mesmo formato do onboarding-agents
+  schemas.py storage.py quiz_bank.py   ← mesmo formato do onboarding-agent
 agents/curador/  entrypoint do adk web
 scripts/         import_pdf, export_package, serve_a2a, make_sample_pdf
 examples/        manual-qa.pdf (fictício)

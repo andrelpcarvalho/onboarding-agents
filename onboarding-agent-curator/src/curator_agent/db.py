@@ -1,4 +1,4 @@
-"""Helpers de SQLite usados pelo catálogo (mesmo formato do onboarding-agents)."""
+"""Helpers de SQLite usados pelo catálogo (mesmo formato do onboarding-agent)."""
 
 from __future__ import annotations
 

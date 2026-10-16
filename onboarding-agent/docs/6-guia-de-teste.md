@@ -37,7 +37,7 @@ crédito do Gemini.
 Todos os comandos rodam na pasta do projeto:
 
 ```bash
-cd /Users/andre/workspace_github/onboarding-agents
+cd /Users/andre/workspace_github/onboarding-agent
 ```
 
 ---

@@ -3,7 +3,7 @@
 Serve tanto o `adk web agents` quanto o servidor A2A (scripts/serve_a2a.py), para
 outros agentes (ex.: o Tutor) pedirem uma importação pela rede.
 
-A exportação para o onboarding-agents NÃO é uma tool de propósito: ela altera outro
+A exportação para o onboarding-agent NÃO é uma tool de propósito: ela altera outro
 projeto e deve ser uma decisão humana (scripts/export_package.py).
 """
 
@@ -93,7 +93,7 @@ base de conhecimento, trilha de onboarding e materiais com quiz, sempre como RAS
 - Depois, resuma: quantas seções, quantos módulos, quantos materiais e, principalmente,
   o que precisa de revisão humana (sections_to_review, role_warnings, materiais com a
   revisão automática não aprovada). Indique o relatorio.md.
-- Nada gerado está aprovado. Para levar ao onboarding-agents, oriente o uso de
+- Nada gerado está aprovado. Para levar ao onboarding-agent, oriente o uso de
   `python scripts/export_package.py <pacote> <caminho>`; você não exporta.
 - Responda em português do Brasil, de forma objetiva.
 """
