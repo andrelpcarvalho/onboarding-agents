@@ -157,6 +157,7 @@ documentos da sua empresa ([guia do autor](docs/2-autor-de-conteudo.md)).
 | **Revisor:** aprova texto e perguntas de cada material | [docs/3-revisor.md](docs/3-revisor.md) |
 | **Buddy:** acompanha seus tutorados e atende pedidos | [docs/4-buddy.md](docs/4-buddy.md) |
 | **Tutorado:** faz o onboarding com o Tutor | [docs/5-tutorado.md](docs/5-tutorado.md) |
+| **Quem quer ver funcionando:** roteiro para replicar cada ponto do projeto | [docs/6-guia-de-teste.md](docs/6-guia-de-teste.md) |
 
 Visão geral do fluxo e das filas: [docs/README.md](docs/README.md).
 

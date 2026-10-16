@@ -74,7 +74,7 @@ def check_role(path, errors: list[str], warnings: list[str], seen_ids: set[str])
         elif not kb.search(" ".join(m.kb_tags)):
             errors.append(f"{where}: kb_tags {m.kb_tags} não encontram nada em data/kb/")
         else:
-            missing = [t for t in m.kb_tags if not kb.search(t)]
+            missing = [t for t in m.kb_tags if not kb.has_term(t)]
             if missing:
                 warnings.append(f"{where}: tags sem resultado na base: {missing}")
     print(f"papel {role.id}: {len(role.modules)} módulo(s)")

@@ -88,3 +88,15 @@ def search(query: str, top_k: int = 4) -> list[dict]:
 def valid_sources() -> set[str]:
     """Todas as fontes citáveis no formato `arquivo.md#Seção`."""
     return {f"{c.source}#{c.heading}" for c in load_chunks()}
+
+
+def has_term(term: str) -> bool:
+    """O termo aparece em algum título, texto ou nome de arquivo da base?
+
+    Para validar `kb_tags` (uma palavra solta): a busca exige relevância mínima e
+    rejeitaria uma tag que aparece só uma vez no texto.
+    """
+    t = _tokens(term)
+    return bool(t) and any(
+        t <= (_tokens(c.heading) | _tokens(c.text) | _tokens(c.source.removesuffix(".md")))
+        for c in load_chunks())
