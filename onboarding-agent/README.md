@@ -58,7 +58,7 @@ tutor>    Seu buddy, Maria Souza (@maria.souza no Slack), pode te ajudar com iss
 ```mermaid
 flowchart LR
     subgraph Pessoas
-        A[Autor] -->|papéis + base de conhecimento| KB[(data/)]
+        A[Autor] -->|papéis + base + missões| KB[(data/)]
         R[Revisor]
         B[Buddy]
         T[Tutorado]
@@ -72,14 +72,21 @@ flowchart LR
     CAT -->|material aprovado| TU
     TU -->|dúvida sem resposta| GAP[lacunas] --> A
     TU -->|pedido com consentimento| B
-    TU -.->|falta material| C
+    KB -->|missões aprovadas| TU
+    TU -->|missão: checkpoints e evidências| T
 ```
 
 **Curador:** `planner → writer → reviewer (em loop) → quiz_writer → publisher`. Gera o texto com
 fontes e um banco de 5 a 6 perguntas, e salva tudo como **rascunho** para revisão humana.
 
 **Tutor:** um `LlmAgent` com ferramentas determinísticas. A cada mensagem recebe no prompt o
-progresso atualizado e o buddy da pessoa, sem chamadas extras ao modelo.
+progresso atualizado, as missões da trilha e o buddy da pessoa, sem chamadas extras ao modelo.
+O Tutor não chama o Curador: se falta material, ele registra a lacuna.
+
+**Missão:** prática guiada em sistemas de homologação (`data/missions/*.yaml`), dividida em
+etapas e checkpoints (`confirm`, `describe`, `capture`). O Tutor conduz e explica com trechos da
+base; o código confere cada resposta e só conclui a missão quando as evidências batem (ex.: o
+número da proposta no ACOM é o mesmo do SITE).
 
 | Ferramenta | O que faz |
 |---|---|
@@ -88,13 +95,15 @@ progresso atualizado e o buddy da pessoa, sem chamadas extras ao modelo.
 | `start_quiz` / `answer_quiz` | Sorteia perguntas do banco aprovado e corrige a resposta lida direto da mensagem |
 | `search_knowledge_base` | Responde dúvidas pela base; se não encontra nada, registra a lacuna |
 | `escalate_to_buddy` | Registra um pedido para o buddy atribuído, só com consentimento |
+| `start_mission` / `answer_mission` | Inicia ou retoma uma missão e confere a resposta do checkpoint lida direto da mensagem |
+| `get_test_cpf` | Entrega um CPF da massa de homologação na etapa que permite |
 | `preload_memory` | Traz lembranças relevantes de conversas anteriores |
 
 **Persistência (SQLite em `.adk/`):**
 
 | Arquivo | Conteúdo |
 |---|---|
-| `sessions.db` | Conversas e estado `user:*`: papel, progresso, quiz em andamento |
+| `sessions.db` | Conversas e estado `user:*`: papel, progresso, quiz e missões (checkpoint e evidências) |
 | `memory.db` | Lembranças pesquisáveis de conversas anteriores |
 | `catalog.db` | Materiais e perguntas, lacunas, pedidos ao buddy e atribuições de buddy |
 
@@ -211,6 +220,8 @@ Rode antes de mudar prompt, modelo, ferramenta ou `.env`. Os casos ficam em
 | Dúvida sem resposta se perder | Busca sem resultado registra a lacuna por código | `tools/kb.py` |
 | Assunto pessoal respondido pela IA | Escopo no prompt + encaminhamento ao buddy atribuído (consentimento, resumo mascarado, até 3 por dia) | `tools/escalation.py` |
 | Material inventado ou distorcido | Fontes obrigatórias e checadas + aprovação humana | `scripts/approve.py` |
+| Missão dada como concluída sem prova | Checkpoints conferidos por código; palavras-chave e regex nunca vão ao modelo; conclusão só com `done_when` | `tools/missions.py` |
+| Dado real em missão | Só homologação; CPF de teste vem da massa (`data/homolog_data.yaml`), única exceção ao mascaramento | `tools/missions.py`, `pii.py` |
 
 ---
 
@@ -223,6 +234,8 @@ Rode antes de mudar prompt, modelo, ferramenta ou `.env`. Os casos ficam em
   documento podem não encontrar a resposta e virar lacuna.
 - **Uma instância só:** o SQLite pede um único processo com disco persistente.
 - **Prompt injection** protegido só por instrução no prompt.
+- **Missão por autodeclaração:** descrever a tela é conferido por palavra-chave; o Tutor não
+  enxerga o SITE nem o ACOM. A evidência forte é o número da proposta igual nos dois sistemas.
 
 ## Próximos passos
 
@@ -243,14 +256,16 @@ Rode antes de mudar prompt, modelo, ferramenta ou `.env`. Os casos ficam em
 agents/                 1 pasta = 1 app no `adk web` (tutor exporta `app` com os plugins)
 src/onboarding_core/
   agents/               build_tutor(), build_curator(), prompts.py
-  tools/                progress, catalog, quiz, escalation, gaps, kb (+ state_keys)
+  tools/                progress, catalog, quiz, missions, escalation, gaps, kb (+ state_keys)
   guardrails.py pii.py  plugin de PII (Presidio)
   quiz_bank.py          regras do banco de perguntas
   storage.py            catálogo: materiais, lacunas, pedidos, atribuições de buddy
   reports.py            progresso dos tutorados para buddy e responsável
   services.py db.py     Runner com sessão e memória em SQLite, WAL, backup
-  config.py schemas.py roles.py kb.py
-data/roles/*.yaml       trilhas por papel
+  config.py schemas.py roles.py kb.py missions.py
+data/roles/*.yaml       trilhas por papel (módulos + missões)
+data/missions/*.yaml    missões práticas (roteiro aprovado)
+data/homolog_data.yaml  massa de teste de homologação (sem dado real)
 data/kb/*.md            base de conhecimento (exemplo)
 scripts/                chat, curate_role, approve, buddy, inbox, user_data, new_role,
                         check_content, backup
