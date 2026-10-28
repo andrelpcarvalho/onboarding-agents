@@ -26,10 +26,9 @@ descobrir sozinha o que precisa saber. Este projeto testa outro modelo:
 ## Como é na prática
 
 ```
-tutorado> Oi, sou dev salesforce
-tutor>    [salvando seu papel...]
-          Boas-vindas à trilha de Desenvolvedor(a) Salesforce! São 4 módulos, e o primeiro é
-          "Cultura e forma de trabalhar". Vamos começar?
+tutorado> Oi!
+tutor>    Boas-vindas à trilha de Desenvolvedor(a) Salesforce! São 4 módulos, e o primeiro é
+          "Cultura e forma de trabalhar". Vamos começar?   (papel atribuído pelo responsável)
 
 tutorado> Já conheço a cultura, pula pro quiz
 tutor>    [buscando material...] [preparando o quiz...]
@@ -92,11 +91,10 @@ Relato negativo ("não encontrei a proposta 12345", "não sei onde fica") nunca 
 
 | Ferramenta | O que faz |
 |---|---|
-| `set_my_role` | Define a trilha da pessoa |
-| `get_material` | Carrega o material aprovado do módulo e o marca como em andamento |
+| `get_material` | Carrega o material **aprovado** do módulo (rascunho nunca chega) e o marca como em andamento |
 | `start_quiz` / `answer_quiz` | Sorteia perguntas do banco aprovado e corrige a resposta lida direto da mensagem |
 | `search_knowledge_base` | Responde dúvidas pela base; se não encontra nada, registra a lacuna |
-| `escalate_to_buddy` | Registra um pedido para o buddy atribuído, só com consentimento |
+| `propose_escalation` / `confirm_escalation` | Prepara o pedido ao buddy e só registra com o "sim" do colaborador, lido da mensagem dele |
 | `start_mission` / `answer_mission` | Inicia ou retoma uma missão e confere a resposta do checkpoint lida direto da mensagem |
 | `get_test_cpf` | Entrega um CPF da massa de homologação na etapa que permite |
 | `preload_memory` | Traz lembranças relevantes de conversas anteriores |
@@ -220,7 +218,9 @@ Rode antes de mudar prompt, modelo, ferramenta ou `.env`. Os casos ficam em
 | Manipular a nota | Perguntas e gabarito do banco aprovado; resposta lida da mensagem; nota calculada por código | `tools/quiz.py` |
 | Pergunta de quiz errada | Banco gerado pelo Curador e aprovado pelo revisor com o material | `quiz_bank.py`, `scripts/approve.py` |
 | Dúvida sem resposta se perder | Busca sem resultado registra a lacuna por código | `tools/kb.py` |
-| Assunto pessoal respondido pela IA | Escopo no prompt + encaminhamento ao buddy atribuído (consentimento, resumo mascarado, até 3 por dia) | `tools/escalation.py` |
+| Assunto pessoal respondido pela IA | Escopo no prompt + encaminhamento ao buddy atribuído: consentimento lido da mensagem por código, resumo mascarado, até 3 por dia | `tools/escalation.py` |
+| Trocar de trilha pela conversa ("sou gerente") | Papel vem da atribuição do responsável no catálogo e é sincronizado antes de cada resposta; o Tutor não tem tool de papel | `tools/progress.py` (`sync_role`), `scripts/buddy.py role` |
+| Rascunho chegar ao colaborador | Material e quiz só da versão aprovada | `tools/catalog.py`, `tools/quiz.py` |
 | Material inventado ou distorcido | Fontes obrigatórias e checadas + aprovação humana | `scripts/approve.py` |
 | Missão dada como concluída sem prova | Checkpoints conferidos por código; palavras-chave e regex nunca vão ao modelo; conclusão só com `done_when` | `tools/missions.py` |
 | Loop de ferramentas (custo e latência) | Até 3 chamadas da mesma tool e 10 no total por resposta; acima disso a tool não roda. Teto de 15 chamadas ao modelo por resposta | `guardrails.py` (`ToolCallBudgetPlugin`), `services.py` |

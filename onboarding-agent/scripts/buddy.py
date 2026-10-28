@@ -6,9 +6,10 @@ Buddy:
     python scripts/buddy.py requests --buddy maria.souza --all  # inclui fechados
     python scripts/buddy.py close 4 --by maria.souza --note "conversamos no Slack"
 
-Responsável (atribuição):
-    python scripts/buddy.py assign joao.silva --buddy maria.souza \\
+Responsável (atribuição de papel e buddy):
+    python scripts/buddy.py assign joao.silva --role dev_salesforce --buddy maria.souza \\
         --name "Maria Souza" --contact "@maria.souza no Slack" --by andre
+    python scripts/buddy.py role joao.silva dev_salesforce --by andre   # só o papel
     python scripts/buddy.py assignments [--buddy maria.souza]
     python scripts/buddy.py unassign joao.silva
 """
@@ -20,7 +21,13 @@ import asyncio
 import sys
 
 from onboarding_core.reports import request_row, tutee_status
+from onboarding_core.roles import load_roles
 from onboarding_core.storage import get_catalog
+
+
+def _check_role(role_id: str) -> None:
+    if role_id not in load_roles():
+        sys.exit(f"papel desconhecido: {role_id}. Válidos: {', '.join(sorted(load_roles()))}")
 
 
 async def cmd_tutees(buddy_id: str) -> None:
@@ -58,8 +65,14 @@ def main() -> None:
     sp.add_argument("--by", required=True)
     sp.add_argument("--note", required=True, help="o que foi feito (sem conteúdo sensível)")
 
-    sp = sub.add_parser("assign", help="(responsável) define o buddy de um tutorado")
+    sp = sub.add_parser("role", help="(responsável) define o papel (trilha) de um tutorado")
     sp.add_argument("user_id")
+    sp.add_argument("role_id")
+    sp.add_argument("--by", required=True)
+
+    sp = sub.add_parser("assign", help="(responsável) define o buddy (e o papel) de um tutorado")
+    sp.add_argument("user_id")
+    sp.add_argument("--role", help="papel do tutorado, ex.: dev_salesforce")
     sp.add_argument("--buddy", required=True, help="login do buddy, ex.: maria.souza")
     sp.add_argument("--name", required=True, help="nome que o Tutor mostra")
     sp.add_argument("--contact", required=True, help='ex.: "@maria.souza no Slack"')
@@ -80,7 +93,15 @@ def main() -> None:
         except KeyError as e:
             sys.exit(str(e).strip("'\""))
         print(f"pedido #{args.id} fechado")
+    elif args.cmd == "role":
+        _check_role(args.role_id)
+        r = cat.assign_role(args.user_id, args.role_id, args.by)
+        print(f"{r.user_id}: papel {r.role_id}. Vale a partir da próxima mensagem.")
     elif args.cmd == "assign":
+        if args.role:
+            _check_role(args.role)
+            cat.assign_role(args.user_id, args.role, args.by)
+            print(f"{args.user_id}: papel {args.role}.")
         a = cat.assign_buddy(args.user_id, args.buddy, args.name, args.contact, args.by)
         print(f"{a.user_id} -> {a.buddy_name} ({a.buddy_contact}). Vale a partir da próxima mensagem.")
         orphans = [e for e in cat.list_escalations("open", unassigned=True) if e.user_id == a.user_id]
@@ -90,7 +111,9 @@ def main() -> None:
     elif args.cmd == "assignments":
         rows = cat.list_assignments(args.buddy)
         for a in rows:
-            print(f"{a.user_id:<20} -> {a.buddy_id:<16} {a.buddy_name} ({a.buddy_contact})")
+            r = cat.get_role_assignment(a.user_id)
+            print(f"{a.user_id:<20} -> {a.buddy_id:<16} {a.buddy_name} ({a.buddy_contact})"
+                  f"  papel: {r.role_id if r else 'NÃO ATRIBUÍDO'}")
         if not rows:
             print("nenhuma atribuição")
     elif args.cmd == "unassign":

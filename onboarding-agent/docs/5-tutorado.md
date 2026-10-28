@@ -34,7 +34,8 @@ A tela tem detalhes técnicos na lateral (é uma tela de testes); converse pela 
 
 ## 2. Primeira conversa
 
-1. Diga quem você é, por exemplo "oi, sou dev salesforce". O Tutor salva a sua função e mostra a trilha.
+1. Diga "oi". O Tutor mostra a trilha do seu papel, que é definida pelo responsável do onboarding.
+   Se ele disser que você ainda não tem papel, peça ao responsável ou ao seu buddy.
 2. Diga "vamos começar". Ele abre o primeiro módulo.
 
 ---

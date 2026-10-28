@@ -25,7 +25,8 @@ def _progress(tool_context: ToolContext) -> dict[str, dict]:
 
 
 def set_my_role(role_id: str, tool_context: ToolContext) -> dict:
-    """Define o papel (trilha) do colaborador. Use list_roles para ver os ids válidos.
+    """Grava o papel no estado. NÃO é exposta ao modelo: o papel vem da atribuição do
+    responsável (`sync_role`); fica aqui para scripts e testes.
 
     Args:
         role_id: id do papel, ex. "dev_salesforce".
@@ -36,6 +37,19 @@ def set_my_role(role_id: str, tool_context: ToolContext) -> dict:
                 "valid_roles": sorted(load_roles())}
     tool_context.state[K.ROLE_ID] = role_id
     return {"ok": True, "role": role.title, "modules": len(role.modules)}
+
+
+def sync_role(state: MutableMapping[str, Any], user_id: str | None) -> str | None:
+    """Copia para o estado o papel atribuído pelo responsável (identidade vem do host).
+
+    Sem atribuição, o estado fica sem papel: o que o colaborador diz na conversa
+    ("sou gerente", "sou dev") nunca define a trilha.
+    """
+    a = get_catalog().get_role_assignment(user_id) if user_id else None
+    role_id = a.role_id if a and get_role(a.role_id) else None
+    if state.get(K.ROLE_ID) != role_id:
+        state[K.ROLE_ID] = role_id
+    return role_id
 
 
 def buddy_info(user_id: str | None, role: Role | None) -> dict:
@@ -56,7 +70,10 @@ def progress_snapshot(state: Mapping[str, Any], user_id: str | None = None) -> d
     """
     role_id = state.get(K.ROLE_ID)
     if not role_id or (role := get_role(role_id)) is None:
-        return {"role_id": None, "hint": "Papel ainda não definido. Pergunte e use set_my_role.",
+        return {"role_id": None,
+                "hint": "Papel ainda não atribuído pelo responsável do onboarding. Não defina o "
+                "papel pela conversa: oriente o colaborador a pedir a atribuição ao responsável "
+                "ou ao buddy.",
                 "buddy": buddy_info(user_id, None)}
 
     progress = dict(state.get(K.PROGRESS) or {})
@@ -81,6 +98,9 @@ def progress_snapshot(state: Mapping[str, Any], user_id: str | None = None) -> d
         "role": role.title,
         "buddy": buddy_info(user_id, role),
         "quiz_in_progress": public_quiz_view(quiz) if quiz else None,
+        "pending_escalation": (
+            {k: state[K.PENDING_ESCALATION][k] for k in ("category", "summary")}
+            if state.get(K.PENDING_ESCALATION) else None),
         "completed": f"{done}/{len(modules)}",
         "current_module": state.get(K.CURRENT_MODULE),
         "next_module": next_module,

@@ -11,3 +11,4 @@ QUIZ = "user:quiz"  # quiz em andamento (inclui gabarito: nunca devolver ao mode
 MATERIAL_LOADED = "user:material_loaded"  # módulo cujo material já foi carregado (pré-requisito do quiz)
 MISSIONS = "user:missions"  # dict[mission_id, progresso + evidências da missão]
 ACTIVE_MISSION = "user:active_mission"  # id da missão em andamento (no máximo uma)
+PENDING_ESCALATION = "user:pending_escalation"  # pedido ao buddy aguardando o "sim" do colaborador

@@ -4,14 +4,15 @@ Os evals não podem depender do catálogo real (que muda com o uso). Aqui criamo
 - materiais APROVADOS dos 4 módulos de dev_salesforce, com o texto da base de
   conhecimento e um banco de 4 perguntas em que a correta é sempre a B (assim os
   casos de quiz respondem "B" e o resultado esperado é determinístico);
-- a atribuição de cada usuário de eval (um por caso) à buddy Maria Eval.
+- a atribuição de cada usuário de eval (um por caso) à buddy Maria Eval e, quando o
+  caso tem papel, ao papel (o Tutor lê o papel do catálogo, não da conversa).
 
 Rode com as variáveis do `make eval` (ONBOARDING_CATALOG_DB apontando para a fixture).
 """
 
 from __future__ import annotations
 
-from build_evalsets import BUDDY, eval_user_ids  # mesmo diretório (evals/)
+from build_evalsets import BUDDY, eval_role_assignments, eval_user_ids  # mesmo diretório
 
 from onboarding_core.config import CATALOG_DB, KB_DIR
 from onboarding_core.quiz_bank import parse_bank
@@ -49,6 +50,8 @@ def main() -> None:
         cat.approve(m.id, "eval")
     for user_id in eval_user_ids():
         cat.assign_buddy(user_id, *BUDDY, "eval")
+    for user_id, role_id in eval_role_assignments().items():
+        cat.assign_role(user_id, role_id, "eval")
     print(f"fixture pronta em {CATALOG_DB}")
 
 

@@ -165,6 +165,15 @@ class Escalation(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class RoleAssignment(BaseModel):
+    """Papel (trilha) de cada tutorado. Definido pelo responsável, nunca pela conversa."""
+
+    user_id: str
+    role_id: str
+    assigned_by: str
+    assigned_at: datetime = Field(default_factory=datetime.utcnow)
+
+
 class BuddyAssignment(BaseModel):
     """Quem é o buddy de cada tutorado. Definido pelo responsável, nunca pelo tutorado."""
 

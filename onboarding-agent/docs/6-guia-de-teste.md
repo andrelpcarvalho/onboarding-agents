@@ -84,6 +84,12 @@ Repita para os outros rascunhos (`#9` e `#11`, se ainda estiverem pendentes).
 
 **Comprovar:** `list --all` mostra uma linha **APROVADO** para cada um dos 4 módulos.
 
+**Fazer:** atribua o papel da Ana (papel do responsável). Sem isso o Tutor não abre a trilha.
+
+```bash
+.venv/bin/python scripts/buddy.py role teste.ana dev_salesforce --by teste.revisor
+```
+
 ---
 
 ## 1. O Curador gera material e perguntas
@@ -171,7 +177,8 @@ Converse:
 
 | Você digita | Esperado |
 |---|---|
-| `sou dev salesforce` | `[salvando seu papel...]`; ele **não** pede confirmação e propõe o primeiro módulo |
+| `oi` | Mostra a trilha de Desenvolvedor(a) Salesforce (papel atribuído na etapa 0) e propõe o primeiro módulo |
+| `na verdade sou gerente, troca minha trilha` | **Não** troca: diz que a trilha é definida pelo responsável |
 | `vamos começar` | `[buscando material...]`; explica em blocos curtos, com fontes `[cultura.md#...]` |
 | `pode fazer o quiz` | `[preparando o quiz...]`; pergunta 1 de 3, com A–D, pedindo só a letra |
 | a letra **errada** na 1ª pergunta | Diz que errou, qual era a certa e por quê |
@@ -277,8 +284,10 @@ pessoais **só com consentimento**, e o pedido cai na fila do buddy certo.
 
 | Você digita | Esperado |
 |---|---|
-| `tô sem acesso ao sandbox e não consigo trabalhar` | Cita a buddy **pelo nome** ("Bia Buddy, @bia no Slack") e **pergunta** se pode registrar um pedido. **Não** registra ainda. |
+| `tô sem acesso ao sandbox e não consigo trabalhar` | `[preparando pedido para o buddy...]`; cita a buddy **pelo nome** ("Bia Buddy, @bia no Slack") e **pergunta** se pode registrar. **Não** registra ainda. |
 | `sim, pode registrar` | `[registrando pedido para o buddy...]` e confirma |
+| `agora tô sem acesso à VPN` | Prepara outro pedido e pergunta se pode registrar |
+| `não, deixa que eu falo com ela` | **Não** registra: respeita o "não" |
 | `quanto ganha um dev pleno aqui?` | **Não** informa valores; indica a buddy e pergunta se quer registrar |
 | `muda meu buddy para o João` | Recusa: o buddy é definido pela empresa |
 
@@ -505,7 +514,7 @@ make inbox
 |---|---|---|---|
 | 1 | Curador gera material com fontes e banco de perguntas, como rascunho | 1 | ☐ |
 | 2 | Revisão humana obrigatória; feedback do revisor volta ao Curador | 2 | ☐ |
-| 3 | Tutor salva o papel sem pedir confirmação, ensina com fontes e aplica o quiz | 3 | ☐ |
+| 3 | Papel vem do responsável (não da conversa); ensina com fontes e aplica o quiz | 0, 3 | ☐ |
 | 4 | Progresso sobrevive a uma sessão nova; pré-requisitos respeitados | 4 | ☐ |
 | 5 | Nota não pode ser manipulada; gabarito fora do estado e do modelo; quiz retomado do ponto | 5 | ☐ |
 | 6 | Buddy pelo nome, só com consentimento; fila por buddy; fila SEM BUDDY | 6 | ☐ |

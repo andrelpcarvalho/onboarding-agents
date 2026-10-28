@@ -35,9 +35,8 @@ def get_learning_path(role_id: str) -> dict:
 
 
 def get_material(module_id: str, tool_context: ToolContext) -> dict:
-    """Busca o material de estudo de um módulo para o papel do colaborador e marca
-    o módulo como em andamento. Prefere a versão aprovada; se só houver rascunho,
-    retorna com reviewed=False.
+    """Busca o material de estudo APROVADO de um módulo para o papel do colaborador e
+    marca o módulo como em andamento. Rascunho nunca chega ao colaborador.
 
     Args:
         module_id: id do módulo.
@@ -45,15 +44,16 @@ def get_material(module_id: str, tool_context: ToolContext) -> dict:
     role_id = tool_context.state.get(K.ROLE_ID)
     if not role_id:
         return {"found": False, "error": "papel do colaborador não definido"}
-    mat = get_catalog().get_latest(role_id, module_id, approved_only=False)
+    mat = get_catalog().get_latest(role_id, module_id, approved_only=True)
     if mat is None:
-        return {"found": False, "role_id": role_id, "module_id": module_id}
+        return {"found": False, "role_id": role_id, "module_id": module_id,
+                "instruction": "diga que o material deste módulo ainda não foi aprovado pela "
+                "equipe e ofereça seguir para outro módulo ou missão"}
     tool_context.state[K.MATERIAL_LOADED] = module_id
     if tool_context.state.get(K.CURRENT_MODULE) != module_id:
         start_module(module_id, tool_context)  # carregar material = abrir o módulo
     return {
         "found": True,
-        "reviewed": mat.status == "approved",
         "title": mat.title,
         "version": mat.version,
         "content_md": mat.content_md,

@@ -1,7 +1,7 @@
 """Quiz de checagem com perguntas aprovadas e nota calculada por código.
 
-- As perguntas vêm do banco do material (gerado pelo Curador e APROVADO por um
-  revisor junto com o conteúdo). O modelo não cria perguntas nem vê o gabarito.
+- As perguntas vêm do banco do material APROVADO por um revisor junto com o
+  conteúdo; rascunho não gera quiz. O modelo não cria perguntas nem vê o gabarito.
 - `start_quiz` sorteia QUIZ_SIZE perguntas do banco; não dá para recriar o quiz
   enquanto ele estiver em andamento.
 - `answer_quiz` não recebe argumentos: a resposta é lida da última mensagem do
@@ -79,7 +79,7 @@ def start_quiz(module_id: str, tool_context: ToolContext) -> dict:
                 "next_step": f"chame get_material('{module_id}') AGORA e depois start_quiz de "
                 "novo, sem perguntar ao colaborador"}
 
-    mat = get_catalog().get_latest(state.get(K.ROLE_ID) or "", module_id, approved_only=False)
+    mat = get_catalog().get_latest(state.get(K.ROLE_ID) or "", module_id, approved_only=True)
     if mat is None or validate_bank(mat.quiz):
         return {"ok": False, "error": "este módulo ainda não tem banco de perguntas",
                 "next_step": "avise o colaborador que o quiz deste módulo ainda não está "
@@ -89,7 +89,6 @@ def start_quiz(module_id: str, tool_context: ToolContext) -> dict:
     quiz: dict[str, Any] = {
         "module_id": module_id,
         "material_id": mat.id,
-        "reviewed": mat.status == "approved",
         "picks": picks,
         "index": 0,
         "correct": 0,
@@ -97,7 +96,7 @@ def start_quiz(module_id: str, tool_context: ToolContext) -> dict:
         "answered_event_ids": [_last_user_message(tool_context)[0]],
     }
     state[K.QUIZ] = quiz
-    return {"ok": True, "reviewed": quiz["reviewed"], "present": question_view(quiz)}
+    return {"ok": True, "present": question_view(quiz)}
 
 
 def answer_quiz(tool_context: ToolContext) -> dict:

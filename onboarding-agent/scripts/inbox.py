@@ -33,6 +33,10 @@ def main() -> None:
     without = [u for u in users if u not in assigned]
     print(f"Tutorados sem buddy atribuído: {len(without)}"
           + (f"   ({', '.join(without[:8])}{'...' if len(without) > 8 else ''})" if without else ""))
+    no_role = [u for u in users if cat.get_role_assignment(u) is None]
+    print(f"Tutorados sem papel atribuído: {len(no_role)}"
+          + (f" ({', '.join(no_role)})  -> scripts/buddy.py role <user> <papel> --by <você>"
+             if no_role else ""))
     print(f"Rascunhos aguardando revisão: {len(cat.list_by_status('draft'))}"
           "   -> scripts/approve.py list")
     print(f"Lacunas abertas: {len(cat.list_open_gaps())}   -> scripts/approve.py gaps")
