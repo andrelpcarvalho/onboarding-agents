@@ -7,6 +7,7 @@ from collections.abc import AsyncIterator
 from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import LlmCallsLimitExceededError
 from google.adk.agents.run_config import RunConfig, StreamingMode
+from google.adk.apps import App
 from google.adk.memory import SqliteMemoryService
 from google.adk.runners import Runner
 from google.adk.sessions.sqlite_session_service import SqliteSessionService
@@ -26,11 +27,9 @@ def build_runner(agent: BaseAgent, app_name: str = APP_NAME) -> Runner:
     """
     prepare_databases()
     return Runner(
-        app_name=app_name,
-        agent=agent,
+        app=App(name=app_name, root_agent=agent, plugins=default_plugins()),
         session_service=SqliteSessionService(db_path=str(SESSIONS_DB)),
         memory_service=SqliteMemoryService(db_path=MEMORY_DB),
-        plugins=default_plugins(),
     )
 
 

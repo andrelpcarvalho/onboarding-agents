@@ -88,6 +88,7 @@ etapas e checkpoints (`confirm`, `describe`, `capture`). O Tutor conduz e explic
 base; o código confere cada resposta e só conclui a missão quando as evidências batem (ex.: o
 número da proposta no ACOM é o mesmo do SITE). Se o colaborador já está à frente, vale o checkpoint
 mais adiante que a mensagem comprova dentro da etapa; um `capture` (evidência) nunca é pulado.
+Relato negativo ("não encontrei a proposta 12345", "não sei onde fica") nunca comprova checkpoint.
 
 | Ferramenta | O que faz |
 |---|---|

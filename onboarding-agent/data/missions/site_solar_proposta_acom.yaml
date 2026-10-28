@@ -65,7 +65,7 @@ steps:
       - id: tela_inicial_acom
         kind: describe
         tutor_instruction: Peça para o colaborador descrever a tela inicial do ACOM antes de seguir.
-        expected: [consulta, proposta, propostas]
+        expected: [consulta, consultar]
       - id: acesso_operador
         kind: describe
         explain: ["site_solar_acom.md#Perfis do ACOM"]
@@ -73,7 +73,8 @@ steps:
           Faça uma verificação guiada do perfil: peça para o colaborador dizer qual perfil
           aparece logado no ACOM.
         expected: [operador solar, operador]
-        block_on: [nao tenho, sem acesso, acesso negado, nao aparece, nao consigo acessar]
+        block_on: [nao tenho acesso, sem acesso, acesso negado, nao tenho o perfil,
+                   nao tenho perfil, perfil nao aparece, sem o perfil, nao consigo acessar]
       - id: proposta_acom
         kind: capture
         tutor_instruction: >

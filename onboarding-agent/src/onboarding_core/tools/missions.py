@@ -35,6 +35,12 @@ from .quiz import _last_user_message
 
 AFFIRMATIVE = ["sim", "entendi", "ok", "pode seguir", "pode", "claro", "certo", "beleza", "bora"]
 NEGATION = ["nao"]
+# Relato de que algo NÃO aconteceu. Nenhum checkpoint é comprovado por uma mensagem assim,
+# mesmo que ela cite a tela ou um número ("não encontrei a proposta 12345").
+NOT_DONE = ["nao sei", "nao achei", "nao encontrei", "nao encontro", "nao consegui",
+            "nao consigo", "nao aparece", "nao apareceu", "nao vejo", "nao entendi",
+            "nao funciona", "nao carrega", "onde fica", "como faco", "nao localizei"]
+MAX_EVENT_IDS = 50
 
 
 def _now() -> str:
@@ -158,6 +164,8 @@ def start_mission(mission_id: str, tool_context: ToolContext) -> dict:
 
 
 def _check(cp: Checkpoint, text: str) -> tuple[bool, str | None]:
+    if _has(NOT_DONE, text):
+        return False, None
     if cp.kind == "confirm":
         return _has(AFFIRMATIVE, text) and not _has(NEGATION, text), None
     if cp.kind == "describe":
@@ -198,7 +206,7 @@ def answer_mission(tool_context: ToolContext) -> dict:
                 "error": "esta mensagem do colaborador já foi avaliada",
                 "next_step": "NÃO chame answer_mission de novo agora: responda ao colaborador "
                 "com base no resultado anterior e aguarde a próxima mensagem dele"}
-    p["answered_event_ids"] = [*p["answered_event_ids"], event_id]
+    p["answered_event_ids"] = [*p["answered_event_ids"], event_id][-MAX_EVENT_IDS:]
     step, cp = _checkpoint(m, p)
     reach = _reachable(step, p["checkpoint"])
 
