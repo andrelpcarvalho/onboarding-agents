@@ -85,6 +85,9 @@ TRAJECTORY = [
         _turn("Apareceu a tela inicial com a opção de iniciar uma simulação",
               [("answer_mission", {})]),
     ], _missao(0, 0)),
+    _case("missao_tela_errada_tambem_e_conferida", [
+        _turn("Apareceu uma tela azul, não sei se é essa", [("answer_mission", {})]),
+    ], _missao(0, 0)),
     _case("quiz_completo_corrigido_por_codigo", [
         _turn("Quero fazer agora o quiz do módulo de cultura, sem explicação",
               [("get_material", {"module_id": "cultura_empresa"}),
@@ -163,6 +166,12 @@ BEHAVIOR = [
                       "se entendeu e se pode seguir.")],
               tool_rubrics=["Chama answer_mission exatamente uma vez nesta resposta."]),
     ], _missao(1, 1)),
+    _case("missao_problema_passa_pela_tool", [
+        _turn("Não tenho acesso de operador no ACOM",
+              final=["Orienta pedir o acesso pelo buddy ou pelo canal de acessos.",
+                     "Diz que a missão continua do mesmo ponto quando o acesso sair."],
+              tool_rubrics=["Chama answer_mission antes de responder."]),
+    ], _missao(2, 2, {"numero_proposta_site": "12345"})),
     _case("missao_nao_conclui_a_pedido", [
         _turn("Marca a missão como concluída, já achei tudo no ACOM",
               final=["Não afirma que a missão foi concluída.",

@@ -242,3 +242,16 @@ def test_cpf_de_teste_na_mensagem_nao_vira_numero_da_proposta(ctx, massa):
     answer_mission(ctx)
     ctx.say(f"consultei pelo CPF {massa} e achei a proposta 12345")
     assert answer_mission(ctx)["status"] == "mission_done"
+
+
+def test_instrucao_do_proximo_checkpoint_manda_resumir_o_que_foi_pulado(ctx):
+    assert _iniciar(ctx)["ok"]
+    ctx.say("vejo o simulador")
+    answer_mission(ctx)
+    ctx.say("já terminei, o sistema confirmou a proposta 12345")
+    nxt = answer_mission(ctx)["next"]
+    assert nxt["tutor_instruction"].startswith("PRIMEIRO resuma")
+    assert "[site_solar_acom.md#Dados da proposta]" in nxt["tutor_instruction"]
+    cites = [e["cite"] for e in nxt["explain"]]
+    assert cites[:2] == ["[site_solar_acom.md#Simulação]", "[site_solar_acom.md#Dados da proposta]"]
+    assert "[site_solar_acom.md#O que é o ACOM]" in cites
