@@ -138,6 +138,15 @@ def redact(text: str, entities: tuple[str, ...] | None = None) -> tuple[str, lis
         text=text, language=LANG, score_threshold=0.4,
         entities=list(entities) if entities else None,
     )
+    # CPFs da massa de homologação (data/homolog_data.yaml) são dados de teste, não PII.
+    from .missions import homolog_cpfs
+
+    allowed = set(homolog_cpfs())
+    if allowed:
+        results = [
+            r for r in results
+            if not (r.entity_type == "BR_CPF" and _digits(text[r.start:r.end]) in allowed)
+        ]
     if not results:
         return text, []
     operators = {

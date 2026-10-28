@@ -1,0 +1,7 @@
+# Massa de teste de HOMOLOGAÇÃO entregue pelo time dono do sistema.
+# Nunca coloque CPF real. Itens que não forem CPF válido são ignorados, então os
+# marcadores abaixo deixam `get_test_cpf` desligado até alguém preencher a massa oficial.
+# Estes CPFs também passam pelo mascaramento de PII sem virar <CPF>.
+cpfs:
+  - "<CPF_HML_1>"
+  - "<CPF_HML_2>"

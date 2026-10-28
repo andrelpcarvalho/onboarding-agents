@@ -2,6 +2,8 @@ id: dev_salesforce
 title: Desenvolvedor(a) Salesforce
 description: Desenvolvimento Apex/LWC e entrega via pipeline de CI/CD com release branch.
 buddy_contact: "#onboarding-dev no Slack"
+missions:
+  - site_solar_proposta_acom
 modules:
   - id: cultura_empresa
     title: Cultura e forma de trabalhar

@@ -65,6 +65,17 @@ A tela tem detalhes técnicos na lateral (é uma tela de testes); converse pela 
 - Não é prova: abaixo de 70% de acertos, ele sugere revisar o módulo depois. Vale a sua melhor nota.
 - Se parar no meio, o quiz continua da mesma pergunta quando você voltar.
 
+### Missões práticas
+
+- Uma **missão** é um roteiro em sistemas reais de **homologação** (ex.: originar uma proposta
+  no SITE e localizá-la no ACOM). O Tutor pede uma coisa por vez: descrever a tela, avisar quando
+  avançou, informar o número da proposta.
+- **O sistema confere cada resposta**, não o Tutor. A missão só fecha quando a evidência bate
+  (ex.: o número da proposta no ACOM é o mesmo do SITE).
+- Precisa de um CPF que passe? Peça ao Tutor: ele entrega um da massa de teste de homologação.
+  Nunca use CPF real, senha ou print.
+- Sem o acesso necessário, a missão fica **pausada** e volta do mesmo ponto quando o acesso sair.
+
 ---
 
 ## 5. Seu buddy
