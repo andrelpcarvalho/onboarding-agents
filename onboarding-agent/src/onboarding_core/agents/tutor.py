@@ -7,24 +7,26 @@ import os
 
 from google.adk.agents import LlmAgent
 from google.adk.agents.readonly_context import ReadonlyContext
-from google.adk.tools import AgentTool, preload_memory
+from google.adk.tools import preload_memory
 from google.genai import types
 
 from .. import config
 from ..tools import (
+    answer_mission,
     answer_quiz,
     escalate_to_buddy,
     get_material,
+    get_test_cpf,
     list_roles,
     log_gap,
     search_knowledge_base,
     set_my_role,
+    start_mission,
     start_module,
     start_quiz,
 )
 from ..tools.progress import progress_snapshot
 from . import prompts
-from .curator import build_curator
 
 
 def _tutor_instruction(ctx: ReadonlyContext) -> str:
@@ -81,10 +83,14 @@ def build_tutor(name: str = "tutor") -> LlmAgent:
             search_knowledge_base,
             log_gap,
             escalate_to_buddy,
+            # Missões práticas (progresso e evidências por código; ver tools/missions.py).
+            start_mission,
+            answer_mission,
+            get_test_cpf,
             # Traz lembranças relevantes de conversas anteriores para o contexto.
             preload_memory,
-            # Curador sob demanda quando falta material (gera rascunho não revisado).
-            AgentTool(build_curator(name="curator")),
+            # Curador fora do Tutor (TO-BE): material só vem do catálogo, nunca gerado
+            # sob demanda durante a conversa com o colaborador.
         ],
         after_agent_callback=_save_session_to_memory,
     )

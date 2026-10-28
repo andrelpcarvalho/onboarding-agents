@@ -85,6 +85,11 @@ def search(query: str, top_k: int = 4) -> list[dict]:
     ]
 
 
+def section(source: str) -> str | None:
+    """Texto de uma fonte `arquivo.md#Seção` (recuperação exata, sem busca)."""
+    return next((c.text for c in load_chunks() if f"{c.source}#{c.heading}" == source), None)
+
+
 def valid_sources() -> set[str]:
     """Todas as fontes citáveis no formato `arquivo.md#Seção`."""
     return {f"{c.source}#{c.heading}" for c in load_chunks()}

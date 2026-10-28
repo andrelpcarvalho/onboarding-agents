@@ -185,6 +185,16 @@ Avise o revisor ([Guia do revisor](3-revisor.md)). Nada chega ao tutorado como "
 aprovação humana. Depois de mudar papéis ou a base, peça ao responsável para reiniciar o
 `make web` / `make chat`.
 
+### Passo 6 (opcional): missões práticas
+
+Missão = roteiro em homologação que o Tutor conduz (`data/missions/<id>.yaml`, exemplo em
+`site_solar_proposta_acom.yaml`). Etapas têm checkpoints de três tipos: `confirm` (entendeu e
+pode seguir), `describe` (descreveu a tela: `expected` lista palavras-chave) e `capture` (guarda
+uma evidência com `pattern`). `done_when` compara duas evidências capturadas. As explicações
+citam seções da base (`explain: ["arquivo.md#Seção"]`), então o conteúdo fica em `data/kb/`.
+Liste o id em `missions:` do papel, use `status: approved` só depois da revisão no PR e rode
+`make check`. CPFs de teste vão em `data/homolog_data.yaml` (massa oficial de homologação).
+
 ---
 
 ## 4. Manutenção

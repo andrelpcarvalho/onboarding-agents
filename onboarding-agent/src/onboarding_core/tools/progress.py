@@ -72,6 +72,8 @@ def progress_snapshot(state: Mapping[str, Any], user_id: str | None = None) -> d
         if next_module is None and p.status != "done" and prereqs_ok:
             next_module = m.id
 
+    from .missions import missions_overview  # import tardio: missions -> quiz -> progress
+
     done = sum(1 for m in modules if m["status"] == "done")
     quiz = state.get(K.QUIZ)
     return {
@@ -84,6 +86,7 @@ def progress_snapshot(state: Mapping[str, Any], user_id: str | None = None) -> d
         "next_module": next_module,
         "to_review": to_review,
         "modules": modules,
+        **missions_overview(state),
     }
 
 

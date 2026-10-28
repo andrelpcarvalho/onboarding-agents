@@ -1,4 +1,4 @@
-"""Valida papéis (data/roles) e base de conhecimento (data/kb) antes de gerar materiais.
+"""Valida papéis (data/roles), missões (data/missions) e base (data/kb) antes de gerar materiais.
 
 Uso:
     python scripts/check_content.py        # ou: make check
@@ -8,14 +8,18 @@ Sai com código 1 se houver erro. Avisos não bloqueiam.
 
 from __future__ import annotations
 
+import re
 import sys
 
 import yaml
 from pydantic import ValidationError
 
 from onboarding_core import kb
-from onboarding_core.config import KB_DIR, ROLES_DIR
-from onboarding_core.schemas import Role
+from onboarding_core.config import KB_DIR, MISSIONS_DIR, ROLES_DIR
+from onboarding_core.roles import load_roles
+from onboarding_core.schemas import Mission, Role
+
+KNOWN_HELPERS = {"get_test_cpf"}
 
 
 def check_kb(errors: list[str], warnings: list[str]) -> None:
@@ -80,6 +84,47 @@ def check_role(path, errors: list[str], warnings: list[str], seen_ids: set[str])
     print(f"papel {role.id}: {len(role.modules)} módulo(s)")
 
 
+def check_missions(errors: list[str], warnings: list[str]) -> None:
+    sources = kb.valid_sources()
+    missions: dict[str, Mission] = {}
+    for path in sorted(MISSIONS_DIR.glob("*.yaml")):
+        name = f"missions/{path.name}"
+        try:
+            m = Mission.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+        except (yaml.YAMLError, ValidationError) as e:
+            errors.append(f"{name}: inválido: {e}")
+            continue
+        if path.stem != m.id:
+            errors.append(f"{name}: o nome do arquivo deve ser igual ao id ('{m.id}.yaml')")
+        if m.status != "approved":
+            warnings.append(f"{name}: status '{m.status}' (não aparece para o colaborador)")
+        for step in m.steps:
+            for h in step.helpers:
+                if h not in KNOWN_HELPERS:
+                    errors.append(f"{name} › {step.id}: helper desconhecido '{h}'")
+            for cp in step.checkpoints:
+                where = f"{name} › {step.id} › {cp.id}"
+                for src in [*cp.explain, *([cp.fallback_source] if cp.fallback_source else [])]:
+                    if src not in sources:
+                        errors.append(f"{where}: fonte '{src}' não existe em data/kb/")
+                if cp.pattern:
+                    try:
+                        re.compile(cp.pattern)
+                    except re.error as e:
+                        errors.append(f"{where}: regex inválida: {e}")
+        missions[m.id] = m
+    modules = {mod.id for r in load_roles().values() for mod in r.modules}
+    for m in missions.values():
+        for pre in m.prerequisites:
+            if pre not in missions and pre not in modules:
+                errors.append(f"missions/{m.id}.yaml: pré-requisito '{pre}' não existe")
+    for r in load_roles().values():
+        for mid in r.missions:
+            if mid not in missions:
+                errors.append(f"roles/{r.id}.yaml: missão '{mid}' não existe em data/missions/")
+    print(f"missões: {len(missions)} arquivo(s)")
+
+
 def main() -> None:
     errors: list[str] = []
     warnings: list[str] = []
@@ -87,6 +132,7 @@ def main() -> None:
     seen: set[str] = set()
     for path in sorted(ROLES_DIR.glob("*.yaml")):
         check_role(path, errors, warnings, seen)
+    check_missions(errors, warnings)
 
     for w in warnings:
         print(f"  aviso: {w}")

@@ -9,3 +9,5 @@ PROGRESS = "user:progress"  # dict[module_id, ModuleProgress.model_dump()]
 CURRENT_MODULE = "user:current_module"
 QUIZ = "user:quiz"  # quiz em andamento (inclui gabarito: nunca devolver ao modelo)
 MATERIAL_LOADED = "user:material_loaded"  # módulo cujo material já foi carregado (pré-requisito do quiz)
+MISSIONS = "user:missions"  # dict[mission_id, progresso + evidências da missão]
+ACTIVE_MISSION = "user:active_mission"  # id da missão em andamento (no máximo uma)

@@ -17,6 +17,9 @@ load_dotenv(PROJECT_ROOT / ".env")
 DATA_DIR = PROJECT_ROOT / "data"
 ROLES_DIR = DATA_DIR / "roles"
 KB_DIR = DATA_DIR / "kb"
+MISSIONS_DIR = DATA_DIR / "missions"
+HOMOLOG_DATA = DATA_DIR / "homolog_data.yaml"
+MISSION_MAX_ATTEMPTS = int(os.getenv("ONBOARDING_MISSION_MAX_ATTEMPTS", "3"))
 
 
 def _path_env(name: str, default: str) -> Path:

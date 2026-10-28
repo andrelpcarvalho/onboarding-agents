@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class Module(BaseModel):
@@ -24,9 +24,73 @@ class Role(BaseModel):
     seniority: list[str] = Field(default_factory=lambda: ["junior", "pleno", "senior"])
     buddy_contact: str | None = None
     modules: list[Module]
+    # Missões práticas da trilha (ids de data/missions/*.yaml), na ordem sugerida.
+    missions: list[str] = Field(default_factory=list)
 
     def module(self, module_id: str) -> Module | None:
         return next((m for m in self.modules if m.id == module_id), None)
+
+
+# ---------- Missões (prática guiada em sistemas, em homologação) ----------
+
+CheckpointKind = Literal["confirm", "describe", "capture"]
+
+
+class Checkpoint(BaseModel):
+    """Um passo verificável da missão. Os campos de verificação nunca vão ao modelo."""
+
+    id: str
+    kind: CheckpointKind
+    tutor_instruction: str
+    explain: list[str] = Field(default_factory=list)  # fontes arquivo.md#Seção
+    expected: list[str] = Field(default_factory=list)  # describe: palavras-chave
+    block_on: list[str] = Field(default_factory=list)  # termos que bloqueiam a missão
+    field: str | None = None  # capture: nome da evidência guardada no estado
+    pattern: str | None = None  # capture: regex aplicada à mensagem do colaborador
+    fallback_source: str | None = None  # fonte indicada depois de N tentativas
+    fallback_after: int = 2
+
+    @model_validator(mode="after")
+    def _by_kind(self) -> Checkpoint:
+        if self.kind == "describe" and not self.expected:
+            raise ValueError(f"checkpoint {self.id}: 'describe' exige 'expected'")
+        if self.kind == "capture" and not (self.field and self.pattern):
+            raise ValueError(f"checkpoint {self.id}: 'capture' exige 'field' e 'pattern'")
+        return self
+
+
+class MissionStep(BaseModel):
+    id: str
+    title: str
+    guidance: str = ""
+    helpers: list[str] = Field(default_factory=list)  # tools auxiliares liberadas na etapa
+    checkpoints: list[Checkpoint]
+
+
+class DoneWhen(BaseModel):
+    """Critério de finalização: duas evidências capturadas precisam ser iguais."""
+
+    left: str
+    right: str
+
+
+class Mission(BaseModel):
+    id: str
+    title: str
+    description: str = ""
+    status: Literal["draft", "approved"] = "draft"
+    approved_by: str | None = None
+    prerequisites: list[str] = Field(default_factory=list)  # ids de módulos ou missões
+    params: dict[str, str] = Field(default_factory=dict)
+    steps: list[MissionStep]
+    done_when: DoneWhen | None = None
+
+    @model_validator(mode="after")
+    def _fields_exist(self) -> Mission:
+        fields = {c.field for s in self.steps for c in s.checkpoints if c.field}
+        if self.done_when and not {self.done_when.left, self.done_when.right} <= fields:
+            raise ValueError("done_when cita evidências que nenhum checkpoint captura")
+        return self
 
 
 class QuizQuestion(BaseModel):

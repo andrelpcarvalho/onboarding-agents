@@ -1,0 +1,85 @@
+# Missão: prática guiada em sistemas (homologação). Roteiro aprovado por humano via PR.
+# O Tutor conduz; quem avança checkpoint e conclui a missão é o código (tools/missions.py).
+# `expected`, `pattern` e `block_on` nunca são enviados ao modelo.
+id: site_solar_proposta_acom
+title: Originar uma proposta no SITE e verificar a proposta no ACOM
+description: Fluxo ponta a ponta do Solar, da originação no SITE à consulta no ACOM.
+status: approved
+approved_by: responsavel.ficticio
+prerequisites: []
+params:
+  url_site: https://abc.com.br
+done_when:
+  left: numero_proposta_site
+  right: numero_proposta_acom
+
+steps:
+  - id: acesso_site
+    title: Acesse o simulador solar do SITE
+    guidance: "Acesse o simulador solar em {url_site} (ambiente de homologação)."
+    checkpoints:
+      - id: tela_inicial_site
+        kind: describe
+        tutor_instruction: >
+          Peça para o colaborador acessar o simulador e descrever brevemente a tela apresentada.
+        expected: [simulacao, simulador, simular]
+
+  - id: preenchimento
+    title: Preencha pré-análise, simulação e dados do proponente
+    guidance: "Se precisar de um CPF de teste que passe, peça ao Tutor."
+    helpers: [get_test_cpf]
+    checkpoints:
+      - id: pre_analise
+        kind: describe
+        explain: ["site_solar_acom.md#Pré-análise"]
+        tutor_instruction: >
+          Explique resumidamente a pré-análise e peça para o colaborador avisar quando
+          chegar à próxima tela.
+        expected: [simulacao]
+      - id: simulacao
+        kind: describe
+        explain: ["site_solar_acom.md#Simulação"]
+        tutor_instruction: >
+          Explique resumidamente a simulação e peça para o colaborador avisar quando
+          chegar à próxima tela.
+        expected: [proponente, dados da proposta]
+      - id: dados_proposta
+        kind: capture
+        explain: ["site_solar_acom.md#Dados da proposta"]
+        tutor_instruction: >
+          Explique resumidamente os dados da proposta e avise que a proposta é persistida
+          de forma assíncrona. Peça o número da proposta exibido na confirmação.
+        field: numero_proposta_site
+        pattern: '\b\d{5,12}\b'
+
+  - id: consulta_acom
+    title: Acesse o ACOM como operador solar e verifique a proposta originada
+    guidance: "Você pode procurar a proposta pelo CPF do cliente usado na origem."
+    checkpoints:
+      - id: entendeu_acom
+        kind: confirm
+        explain: ["site_solar_acom.md#O que é o ACOM"]
+        tutor_instruction: >
+          Explique resumidamente o que é o ACOM e peça para o colaborador confirmar se
+          entendeu e se pode seguir.
+      - id: tela_inicial_acom
+        kind: describe
+        tutor_instruction: Peça para o colaborador descrever a tela inicial do ACOM antes de seguir.
+        expected: [consulta, proposta, propostas]
+      - id: acesso_operador
+        kind: describe
+        explain: ["site_solar_acom.md#Perfis do ACOM"]
+        tutor_instruction: >
+          Faça uma verificação guiada do perfil: peça para o colaborador dizer qual perfil
+          aparece logado no ACOM.
+        expected: [operador solar, operador]
+        block_on: [nao tenho, sem acesso, acesso negado, nao aparece, nao consigo acessar]
+      - id: proposta_acom
+        kind: capture
+        tutor_instruction: >
+          Guie a consulta da proposta pelo CPF usado na origem e peça o número da proposta
+          encontrada no ACOM.
+        field: numero_proposta_acom
+        pattern: '\b\d{5,12}\b'
+        fallback_source: "site_solar_acom.md#Proposta não encontrada no ACOM"
+        fallback_after: 2

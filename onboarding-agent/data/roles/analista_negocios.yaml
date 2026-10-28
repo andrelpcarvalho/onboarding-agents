@@ -2,6 +2,8 @@ id: analista_negocios
 title: Analista de Negócios
 description: Levantamento de requisitos, histórias de usuário e homologação com as áreas.
 buddy_contact: "#onboarding-negocios no Slack"
+missions:
+  - site_solar_proposta_acom
 modules:
   - id: cultura_empresa
     title: Cultura e forma de trabalhar
