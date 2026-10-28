@@ -84,6 +84,56 @@
       "finalSessionState": {}
     },
     {
+      "evalId": "missao_confere_resposta_do_checkpoint",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "text": "Apareceu a tela inicial com a opção de iniciar uma simulação"
+              }
+            ],
+            "role": "user"
+          },
+          "intermediateData": {
+            "toolUses": [
+              {
+                "args": {},
+                "name": "answer_mission"
+              }
+            ],
+            "toolResponses": [],
+            "intermediateResponses": []
+          },
+          "creationTimestamp": 0.0
+        }
+      ],
+      "sessionInput": {
+        "appName": "tutor",
+        "userId": "eval.missao_confere_resposta_do_checkpoint",
+        "state": {
+          "user:role_id": "dev_salesforce",
+          "user:active_mission": "site_solar_proposta_acom",
+          "user:missions": {
+            "site_solar_proposta_acom": {
+              "status": "in_progress",
+              "step": 0,
+              "checkpoint": 0,
+              "attempts": {},
+              "evidence": {},
+              "answered_event_ids": [
+                null
+              ],
+              "started_at": "2026-10-27T00:00:00+00:00"
+            }
+          }
+        }
+      },
+      "creationTimestamp": 0.0,
+      "finalSessionState": {}
+    },
+    {
       "evalId": "quiz_completo_corrigido_por_codigo",
       "conversation": [
         {

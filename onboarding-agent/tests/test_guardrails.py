@@ -76,3 +76,24 @@ async def test_saida_preserva_contatos_oficiais_mas_mascara_cpf():
     out = await PiiRedactionPlugin().after_model_callback(callback_context=None, llm_response=resp)
     t = out.content.parts[0].text
     assert "seguranca@empresa.com.br" in t and "(11) 3333-4444" in t and "<CPF>" in t
+
+
+async def test_orcamento_de_tools_por_resposta():
+    from types import SimpleNamespace
+
+    from onboarding_core.guardrails import ToolCallBudgetPlugin
+
+    plug = ToolCallBudgetPlugin(per_tool=3, per_turn=5)
+    tool = SimpleNamespace(name="answer_mission")
+    turn1 = SimpleNamespace(invocation_id="inv-1")
+    results = [await plug.before_tool_callback(tool=tool, tool_args={}, tool_context=turn1)
+               for _ in range(4)]
+    assert results[:3] == [None, None, None]  # até 3 chamadas da mesma tool rodam
+    assert results[3]["ok"] is False and "pare de chamar" in results[3]["next_step"]
+
+    other = SimpleNamespace(name="search_knowledge_base")
+    assert await plug.before_tool_callback(tool=other, tool_args={}, tool_context=turn1) is None
+    assert await plug.before_tool_callback(tool=other, tool_args={}, tool_context=turn1)  # 6ª total
+
+    await plug.after_run_callback(invocation_context=turn1)  # nova mensagem zera o orçamento
+    assert await plug.before_tool_callback(tool=tool, tool_args={}, tool_context=turn1) is None

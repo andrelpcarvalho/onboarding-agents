@@ -21,6 +21,12 @@ MISSIONS_DIR = DATA_DIR / "missions"
 HOMOLOG_DATA = DATA_DIR / "homolog_data.yaml"
 MISSION_MAX_ATTEMPTS = int(os.getenv("ONBOARDING_MISSION_MAX_ATTEMPTS", "3"))
 
+# Orçamento por resposta do Tutor (uma mensagem do colaborador). Evita loop de tools:
+# o teste manual da missão chegou a 70+ chamadas de answer_mission numa resposta só.
+TOOL_CALLS_PER_TOOL = int(os.getenv("ONBOARDING_TOOL_CALLS_PER_TOOL", "3"))
+TOOL_CALLS_PER_TURN = int(os.getenv("ONBOARDING_TOOL_CALLS_PER_TURN", "10"))
+MAX_LLM_CALLS = int(os.getenv("ONBOARDING_MAX_LLM_CALLS", "15"))
+
 
 def _path_env(name: str, default: str) -> Path:
     p = Path(os.getenv(name, default))

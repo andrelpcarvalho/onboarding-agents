@@ -178,3 +178,67 @@ def test_contexto_do_tutor_mostra_missao_em_andamento(ctx):
     start_mission(MISSAO, ctx)
     snap = progress_snapshot(ctx.state, ctx.user_id)
     assert snap["mission_in_progress"]["checkpoint"] == "tela_inicial_site"
+
+
+# ---- regressões do teste manual de 27/10 (make chat) ----
+
+def test_colaborador_a_frente_captura_numero_na_mesma_etapa(ctx):
+    """'Número: 12345' chegou quando a missão ainda esperava a tela de simulação."""
+    assert _iniciar(ctx)["ok"]
+    ctx.say("apareceu a opção de iniciar uma simulação")
+    answer_mission(ctx)
+    ctx.say("estou na tela de simulação → estou nos dados do proponente")  # duas telas numa msg
+    r = answer_mission(ctx)
+    assert r["status"] == "advanced" and r["next"]["checkpoint"] == "dados_proposta"
+    assert [s["checkpoint"] for s in r["skipped"]] == ["simulacao"]
+    assert r["skipped"][0]["explain"][0]["cite"] == "[site_solar_acom.md#Simulação]"
+    ctx.say("o sistema confirmou a proposta. Número: 12345")
+    r = answer_mission(ctx)
+    assert r["status"] == "advanced" and r["next"]["step"] == "3/3"
+    assert ctx.state[K.MISSIONS][MISSAO]["evidence"]["numero_proposta_site"] == "12345"
+
+
+def test_pula_direto_para_o_capture_da_etapa(ctx):
+    assert _iniciar(ctx)["ok"]
+    ctx.say("vejo o simulador")
+    answer_mission(ctx)  # agora em pre_analise
+    ctx.say("já terminei tudo, o sistema confirmou a proposta 12345")
+    r = answer_mission(ctx)
+    assert r["status"] == "advanced" and r["next"]["checkpoint"] == "entendeu_acom"
+    assert [s["checkpoint"] for s in r["skipped"]] == ["simulacao", "dados_proposta"]
+
+
+def test_nao_atravessa_etapa_nem_pula_capture(ctx):
+    assert _iniciar(ctx)["ok"]
+    ctx.say("vejo o simulador")
+    answer_mission(ctx)  # pre_analise, etapa 2
+    ctx.say("vejo a consulta de propostas e o perfil operador solar")  # isso é da etapa 3
+    assert answer_mission(ctx)["status"] == "not_confirmed"
+    assert ctx.state[K.MISSIONS][MISSAO]["checkpoint"] == 0
+
+
+def test_bloqueio_de_checkpoint_adiante_na_mesma_etapa(ctx):
+    _ate_perfil(ctx)  # já em acesso_operador; recua para testar a partir de tela_inicial_acom
+    p = ctx.state[K.MISSIONS][MISSAO]
+    p["checkpoint"] = 1
+    ctx.state[K.MISSIONS] = {MISSAO: p}
+    ctx.say("não tenho acesso de operador")
+    assert answer_mission(ctx)["status"] == "blocked_access"
+    assert ctx.state[K.MISSIONS][MISSAO]["blocked"]["checkpoint"] == "acesso_operador"
+
+
+def test_chamada_repetida_manda_parar(ctx):
+    assert _iniciar(ctx)["ok"]
+    ctx.say("vejo o simulador")
+    assert answer_mission(ctx)["status"] == "advanced"
+    r = answer_mission(ctx)
+    assert r["status"] == "already_evaluated" and "NÃO chame" in r["next_step"]
+    assert "current" not in r
+
+
+def test_cpf_de_teste_na_mensagem_nao_vira_numero_da_proposta(ctx, massa):
+    _ate_perfil(ctx)
+    ctx.say("Perfil operador solar.")
+    answer_mission(ctx)
+    ctx.say(f"consultei pelo CPF {massa} e achei a proposta 12345")
+    assert answer_mission(ctx)["status"] == "mission_done"

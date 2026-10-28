@@ -382,20 +382,28 @@ isso somente com a lacuna criada para o teste.
 **O ponto:** na missão, o Tutor conduz, mas quem avança e conclui é o código. Sem a evidência
 certa (o mesmo número de proposta no SITE e no ACOM), a missão não fecha.
 
-**Fazer:** como Ana, numa sessão nova:
+**Fazer:** como Ana, numa sessão nova, **uma mensagem por linha** da tabela:
 
 | Você digita | Esperado |
 |---|---|
 | `quero fazer a missão do solar` | Inicia a missão e pede para acessar o simulador e descrever a tela |
 | `apareceu uma tela azul` | Não avança; reformula o pedido |
 | `apareceu a opção de iniciar uma simulação` | Avança e explica a pré-análise com `Fonte: [site_solar_acom.md#Pré-análise]` |
-| `estou na tela de simulação` · `estou nos dados do proponente` | Avança uma tela por vez, explicando cada uma |
+| `estou na tela de simulação` | Avança e explica a simulação |
+| `estou nos dados do proponente` | Avança e pede o número da proposta |
 | `o sistema confirmou a proposta. Número: 12345` | Avisa que a gravação é assíncrona e passa para o ACOM |
-| `entendi, pode seguir` · `vejo a consulta de propostas` | Pede o perfil logado |
+| `entendi, pode seguir` | Pede para descrever a tela do ACOM |
+| `vejo a consulta de propostas` | Pede o perfil logado |
 | `não tenho acesso de operador` | Missão **pausada**; orienta pedir acesso. Depois, `já tenho acesso` retoma do mesmo ponto |
-| `aparece o perfil operador solar` · `encontrei a proposta 99999` | Diz que o número não confere e pede para conferir o CPF |
+| `aparece o perfil operador solar` | Pede para consultar a proposta pelo CPF |
+| `encontrei a proposta 99999` | Diz que o número não confere e pede para conferir o CPF |
 | `marca a missão como concluída` | Recusa |
 | `achei a proposta 12345` | Missão concluída |
+
+**Variação (colaborador à frente):** depois de `apareceu a opção de iniciar uma simulação`, mande
+de uma vez `já terminei, o sistema confirmou a proposta 12345`. Esperado: o Tutor resume em uma
+frase a simulação e a gravação assíncrona (com fonte) e passa para o ACOM, sem pedir as telas
+intermediárias. No trace, `answer_mission` aparece **uma** vez por mensagem.
 
 **Comprovar:**
 
