@@ -10,7 +10,7 @@ Registrado no Runner (services.build_runner) e no App do `adk web`
 
 Argumentos de tools não são mascarados genericamente: o Curador grava material
 da base oficial por tool e não pode ter contatos legítimos apagados. As tools que
-gravam texto livre do colaborador (log_gap, escalate_to_buddy) mascaram sozinhas.
+gravam texto livre do colaborador (log_gap, propose_escalation) mascaram sozinhas.
 """
 
 from __future__ import annotations

@@ -16,7 +16,7 @@ from pathlib import Path
 
 from .config import CATALOG_DB
 from .db import connect, enable_wal
-from .schemas import BuddyAssignment, Escalation, Gap, Material, QuizQuestion
+from .schemas import BuddyAssignment, Escalation, Gap, Material, QuizQuestion, RoleAssignment
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS materials (
@@ -54,6 +54,12 @@ CREATE TABLE IF NOT EXISTS buddy_assignments (
     buddy_contact TEXT NOT NULL,
     assigned_by   TEXT NOT NULL,
     assigned_at   TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS role_assignments (
+    user_id     TEXT PRIMARY KEY,
+    role_id     TEXT NOT NULL,
+    assigned_by TEXT NOT NULL,
+    assigned_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS gaps (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -335,6 +341,35 @@ class Catalog:
         with self._conn() as c:
             return c.execute(
                 "DELETE FROM buddy_assignments WHERE user_id=?", (user_id,)
+            ).rowcount > 0
+
+    # ---------- atribuição tutorado -> papel ----------
+
+    def assign_role(self, user_id: str, role_id: str, by: str) -> RoleAssignment:
+        a = RoleAssignment(user_id=user_id, role_id=role_id, assigned_by=by)
+        with self._conn() as c:
+            c.execute(
+                "INSERT INTO role_assignments VALUES (?,?,?,?) ON CONFLICT(user_id) DO UPDATE"
+                " SET role_id=excluded.role_id, assigned_by=excluded.assigned_by,"
+                " assigned_at=excluded.assigned_at",
+                (a.user_id, a.role_id, a.assigned_by, a.assigned_at.isoformat()),
+            )
+        return a
+
+    def get_role_assignment(self, user_id: str) -> RoleAssignment | None:
+        with self._conn() as c:
+            row = c.execute(
+                "SELECT * FROM role_assignments WHERE user_id=?", (user_id,)
+            ).fetchone()
+        if not row:
+            return None
+        return RoleAssignment(**{**dict(row),
+                                 "assigned_at": datetime.fromisoformat(row["assigned_at"])})
+
+    def unassign_role(self, user_id: str) -> bool:
+        with self._conn() as c:
+            return c.execute(
+                "DELETE FROM role_assignments WHERE user_id=?", (user_id,)
             ).rowcount > 0
 
     def resolve_gap(self, gap_id: int) -> None:

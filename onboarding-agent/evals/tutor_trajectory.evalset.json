@@ -4,42 +4,6 @@
   "description": "Ferramentas certas, na ordem e com os argumentos certos",
   "eval_cases": [
     {
-      "evalId": "papel_salvo_sem_pedir_confirmacao",
-      "conversation": [
-        {
-          "invocationId": "",
-          "userContent": {
-            "parts": [
-              {
-                "text": "Oi, sou dev salesforce"
-              }
-            ],
-            "role": "user"
-          },
-          "intermediateData": {
-            "toolUses": [
-              {
-                "args": {
-                  "role_id": "dev_salesforce"
-                },
-                "name": "set_my_role"
-              }
-            ],
-            "toolResponses": [],
-            "intermediateResponses": []
-          },
-          "creationTimestamp": 0.0
-        }
-      ],
-      "sessionInput": {
-        "appName": "tutor",
-        "userId": "eval.papel_salvo_sem_pedir_confirmacao",
-        "state": {}
-      },
-      "creationTimestamp": 0.0,
-      "finalSessionState": {}
-    },
-    {
       "evalId": "pular_explicacao_ainda_carrega_material",
       "conversation": [
         {

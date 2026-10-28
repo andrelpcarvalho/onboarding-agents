@@ -19,7 +19,7 @@ def _iniciar(ctx, cat, quiz=None, approve=True):
 
 def test_quiz_sorteia_do_banco_aprovado_sem_vazar_gabarito(ctx, tmp_catalog):
     r = _iniciar(ctx, tmp_catalog, quiz=bank(6))
-    assert r["ok"] and r["reviewed"] is True
+    assert r["ok"]
     assert r["present"]["question"].startswith("P") and set(r["present"]["options"]) == set("ABCD")
     assert "correct" not in str(r["present"])
     # o estado guarda só referências, nunca o gabarito
@@ -79,8 +79,9 @@ def test_sem_banco_valido_quiz_indisponivel(ctx, tmp_catalog):
     assert not r["ok"] and "banco" in r["error"] and ctx.state.get(K.QUIZ) is None
 
 
-def test_rascunho_e_sinalizado(ctx, tmp_catalog):
-    assert _iniciar(ctx, tmp_catalog, approve=False)["reviewed"] is False
+def test_rascunho_nao_gera_quiz(ctx, tmp_catalog):
+    r = _iniciar(ctx, tmp_catalog, approve=False)
+    assert not r["ok"] and ctx.state.get(K.QUIZ) is None
 
 
 def test_quiz_sobrevive_a_nova_sessao(ctx, tmp_catalog):

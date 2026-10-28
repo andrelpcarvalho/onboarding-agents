@@ -9,15 +9,15 @@ def test_rascunho_aprovacao_e_versionamento(ctx, tmp_catalog):
 
     r = draft(tmp_catalog, content="v1")
     m = get_material("pipeline_deploy", ctx)
-    assert m["found"] and m["reviewed"] is False
+    assert m["found"] is False and "aprovado" in m["instruction"]  # rascunho não chega ao tutorado
 
     tmp_catalog.approve(r.id, "maria")
-    assert get_material("pipeline_deploy", ctx)["reviewed"] is True
+    assert get_material("pipeline_deploy", ctx)["content_md"] == "v1"
 
     # nova versão em rascunho não substitui a aprovada para o Tutor
     draft(tmp_catalog, content="v2")
     m = get_material("pipeline_deploy", ctx)
-    assert m["content_md"] == "v1" and m["reviewed"]
+    assert m["found"] and m["content_md"] == "v1"
 
 
 def test_publicacao_le_material_e_banco_do_estado(ctx, tmp_catalog):
@@ -79,7 +79,8 @@ def test_get_material_abre_o_modulo(ctx, tmp_catalog):
     from onboarding_core.tools import state_keys as K
 
     set_my_role("dev_salesforce", ctx)
-    draft(tmp_catalog, module="cultura_empresa", sources=["cultura.md#Valores"])
+    m = draft(tmp_catalog, module="cultura_empresa", sources=["cultura.md#Valores"])
+    tmp_catalog.approve(m.id, "rev")
     assert get_material("cultura_empresa", ctx)["found"]
     assert ctx.state[K.CURRENT_MODULE] == "cultura_empresa"
     assert ctx.state[K.MATERIAL_LOADED] == "cultura_empresa"

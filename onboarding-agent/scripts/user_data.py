@@ -3,7 +3,7 @@
 Uso:
     python scripts/user_data.py show  joao.silva
     python scripts/user_data.py reset joao.silva            # progresso, conversas e memória
-    python scripts/user_data.py reset joao.silva --forget   # + lacunas, pedidos e atribuição de buddy
+    python scripts/user_data.py reset joao.silva --forget   # + lacunas, pedidos e atribuições de buddy e papel
 
 Pare o `make web` / `make chat` antes de apagar. Faça `make backup` se tiver dúvida.
 """
@@ -64,7 +64,8 @@ def reset(user_id: str, forget: bool) -> None:
             for table in ("gaps", "escalations"):
                 c.execute(f"DELETE FROM {table} WHERE user_id=?", (user_id,))
         cat.unassign_buddy(user_id)
-        print("apagados também: lacunas, pedidos ao buddy e atribuição de buddy")
+        cat.unassign_role(user_id)
+        print("apagados também: lacunas, pedidos ao buddy e atribuições de buddy e de papel")
 
 
 def main() -> None:

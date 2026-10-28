@@ -26,8 +26,12 @@ Sistema multiagente de onboarding com Google ADK (Python 3.11):
   Novos comportamentos importantes ganham um caso em `evals/build_evalsets.py`.
 - Texto livre que vai para o banco (lacunas, escalonamentos etc.) passa por `pii.redact_text`.
   O plugin `PiiRedactionPlugin` deve estar no Runner e no `App` de cada agente com usuário final.
-- Buddy vem de `buddy_assignments` (definido pelo responsável via scripts/buddy.py); nunca
-  exponha tool que deixe o tutorado escolher ou trocar o próprio buddy.
+- Buddy vem de `buddy_assignments` e papel de `role_assignments` (definidos pelo responsável via
+  scripts/buddy.py); nunca exponha tool que deixe o tutorado escolher papel ou buddy.
+  `set_my_role` e `escalate_to_buddy` existem só para scripts/testes, fora das tools do Tutor.
+- Encaminhamento ao buddy: `propose_escalation` prepara, `confirm_escalation` lê o "sim" da
+  mensagem do colaborador. O modelo nunca registra pedido sem essa resposta.
+- Material e quiz: só versão aprovada (`approved_only=True`).
 
 ## Comandos
 - `make setup` · `make test` · `make check` · `make web` · `make chat USER_ID=fulano`

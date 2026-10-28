@@ -14,18 +14,17 @@ from .. import config
 from ..tools import (
     answer_mission,
     answer_quiz,
-    escalate_to_buddy,
+    confirm_escalation,
     get_material,
     get_test_cpf,
-    list_roles,
     log_gap,
+    propose_escalation,
     search_knowledge_base,
-    set_my_role,
     start_mission,
     start_module,
     start_quiz,
 )
-from ..tools.progress import progress_snapshot
+from ..tools.progress import progress_snapshot, sync_role
 from . import prompts
 
 
@@ -34,8 +33,6 @@ def _tutor_instruction(ctx: ReadonlyContext) -> str:
     ao modelo). Evita as idas e voltas get_my_progress/list_roles no começo da
     conversa, que custavam ~2 chamadas ao LLM por mensagem inicial."""
     snapshot = progress_snapshot(ctx.state, ctx.user_id)
-    if snapshot["role_id"] is None:
-        snapshot["available_roles"] = list_roles()["roles"]
     return prompts.TUTOR.replace("<<CONTEXTO>>", json.dumps(snapshot, ensure_ascii=False))
 
 
@@ -52,6 +49,11 @@ def _generate_config() -> types.GenerateContentConfig | None:
     return types.GenerateContentConfig(
         thinking_config=types.ThinkingConfig(thinking_budget=int(budget))
     )
+
+
+def _sync_role(callback_context) -> None:
+    """Antes de cada resposta: papel = o atribuído pelo responsável no catálogo."""
+    sync_role(callback_context.state, callback_context.user_id)
 
 
 async def _save_session_to_memory(callback_context) -> None:
@@ -75,14 +77,14 @@ def build_tutor(name: str = "tutor") -> LlmAgent:
         instruction=_tutor_instruction,
         generate_content_config=_generate_config(),
         tools=[
-            set_my_role,
             start_module,
             get_material,
             start_quiz,
             answer_quiz,
             search_knowledge_base,
             log_gap,
-            escalate_to_buddy,
+            propose_escalation,
+            confirm_escalation,
             # Missões práticas (progresso e evidências por código; ver tools/missions.py).
             start_mission,
             answer_mission,
@@ -92,5 +94,6 @@ def build_tutor(name: str = "tutor") -> LlmAgent:
             # Curador fora do Tutor (TO-BE): material só vem do catálogo, nunca gerado
             # sob demanda durante a conversa com o colaborador.
         ],
+        before_agent_callback=_sync_role,
         after_agent_callback=_save_session_to_memory,
     )
