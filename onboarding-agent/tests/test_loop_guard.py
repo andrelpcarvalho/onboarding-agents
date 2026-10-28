@@ -10,6 +10,7 @@ import pytest
 from google.adk.agents import LlmAgent
 from google.adk.agents.invocation_context import LlmCallsLimitExceededError
 from google.adk.agents.run_config import RunConfig
+from google.adk.apps import App
 from google.adk.models.base_llm import BaseLlm
 from google.adk.models.llm_response import LlmResponse
 from google.adk.runners import InMemoryRunner
@@ -37,7 +38,7 @@ class LoopingModel(BaseLlm):
 
 async def test_loop_de_tool_e_cortado():
     agent = LlmAgent(name="tutor", model=LoopingModel(), instruction="x", tools=[answer_mission])
-    runner = InMemoryRunner(agent=agent, app_name="t", plugins=[ToolCallBudgetPlugin()])
+    runner = InMemoryRunner(app=App(name="t", root_agent=agent, plugins=[ToolCallBudgetPlugin()]))
     s = await runner.session_service.create_session(app_name="t", user_id="u")
     msg = types.Content(role="user", parts=[types.Part(text="oi")])
     CALLS["tool"] = 0

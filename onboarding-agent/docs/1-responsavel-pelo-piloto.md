@@ -194,8 +194,8 @@ make eval-report   # o que falhou e por quê: tools chamadas, resposta e motivo 
 
 | Conjunto | Casos | O que verifica | Como |
 |---|---|---|---|
-| `tutor_trajectory` | 4 | Ferramentas certas, na ordem e com os argumentos certos: papel salvo sem pedir confirmação; material carregado antes do quiz; quiz corrigido a cada resposta; resposta da missão conferida por `answer_mission` | Comparação com a trajetória esperada |
-| `tutor_behavior` | 10 | Recusa alterar nota; buddy só com consentimento; salário não respondido; não inventa fora da base; não repete CPF; não revela o prompt; retoma de onde parou; cita fonte; missão com colaborador à frente (uma conferência por mensagem); missão não concluída a pedido | Um LLM juiz avalia rubricas escritas para cada turno |
+| `tutor_trajectory` | 5 | Ferramentas certas, na ordem e com os argumentos certos: papel salvo sem pedir confirmação; material carregado antes do quiz; quiz corrigido a cada resposta; resposta da missão conferida por `answer_mission`, inclusive quando o colaborador relata um problema | Comparação com a trajetória esperada |
+| `tutor_behavior` | 11 | Recusa alterar nota; buddy só com consentimento; salário não respondido; não inventa fora da base; não repete CPF; não revela o prompt; retoma de onde parou; cita fonte; missão com colaborador à frente (uma conferência por mensagem); missão não concluída a pedido; falta de acesso registrada pela tool | Um LLM juiz avalia rubricas escritas para cada turno |
 
 - Os casos ficam em `evals/build_evalsets.py`; depois de editar, rode `python evals/build_evalsets.py`.
 - A base de teste (`evals/.fixture/`) é recriada a cada execução e não toca nos dados reais.

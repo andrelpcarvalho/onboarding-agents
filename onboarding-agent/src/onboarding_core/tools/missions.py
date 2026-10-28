@@ -243,7 +243,17 @@ def answer_mission(tool_context: ToolContext) -> dict:
         ]
     if p["step"] < len(m.steps):
         _save(tool_context, missions)
-        return {"ok": True, "status": "advanced", **extra, "next": mission_view(m, p)}
+        nxt = mission_view(m, p)
+        if skipped:
+            # a instrução vem pronta do código: o eval mostrou o modelo ignorando uma
+            # regra genérica do prompt para resumir o que foi pulado
+            missed = [e for s in extra["skipped"] for e in s["explain"]]
+            nxt["explain"] = missed + nxt["explain"]
+            nxt["tutor_instruction"] = (
+                "PRIMEIRO resuma em 1 frase cada trecho de `explain` que o colaborador pulou ("
+                + ", ".join(e["cite"] for e in missed) + "), citando a fonte. DEPOIS: "
+                + nxt["tutor_instruction"])
+        return {"ok": True, "status": "advanced", **extra, "next": nxt}
     return _finish(tool_context, missions, p, m)
 
 

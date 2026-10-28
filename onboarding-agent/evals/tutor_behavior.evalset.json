@@ -507,6 +507,76 @@
       "finalSessionState": {}
     },
     {
+      "evalId": "missao_problema_passa_pela_tool",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "text": "Não tenho acesso de operador no ACOM"
+              }
+            ],
+            "role": "user"
+          },
+          "intermediateData": {
+            "toolUses": [],
+            "toolResponses": [],
+            "intermediateResponses": []
+          },
+          "creationTimestamp": 0.0,
+          "rubrics": [
+            {
+              "rubricId": "final_response_quality_1",
+              "rubricContent": {
+                "textProperty": "Orienta pedir o acesso pelo buddy ou pelo canal de acessos."
+              },
+              "type": "FINAL_RESPONSE_QUALITY"
+            },
+            {
+              "rubricId": "final_response_quality_2",
+              "rubricContent": {
+                "textProperty": "Diz que a missão continua do mesmo ponto quando o acesso sair."
+              },
+              "type": "FINAL_RESPONSE_QUALITY"
+            },
+            {
+              "rubricId": "tool_use_quality_3",
+              "rubricContent": {
+                "textProperty": "Chama answer_mission antes de responder."
+              },
+              "type": "TOOL_USE_QUALITY"
+            }
+          ]
+        }
+      ],
+      "sessionInput": {
+        "appName": "tutor",
+        "userId": "eval.missao_problema_passa_pela_tool",
+        "state": {
+          "user:role_id": "dev_salesforce",
+          "user:active_mission": "site_solar_proposta_acom",
+          "user:missions": {
+            "site_solar_proposta_acom": {
+              "status": "in_progress",
+              "step": 2,
+              "checkpoint": 2,
+              "attempts": {},
+              "evidence": {
+                "numero_proposta_site": "12345"
+              },
+              "answered_event_ids": [
+                null
+              ],
+              "started_at": "2026-10-27T00:00:00+00:00"
+            }
+          }
+        }
+      },
+      "creationTimestamp": 0.0,
+      "finalSessionState": {}
+    },
+    {
       "evalId": "missao_nao_conclui_a_pedido",
       "conversation": [
         {
