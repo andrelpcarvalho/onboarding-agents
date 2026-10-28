@@ -377,6 +377,37 @@ isso somente com a lacuna criada para o teste.
 
 ---
 
+## 8.1 Missão prática conferida por código
+
+**O ponto:** na missão, o Tutor conduz, mas quem avança e conclui é o código. Sem a evidência
+certa (o mesmo número de proposta no SITE e no ACOM), a missão não fecha.
+
+**Fazer:** como Ana, numa sessão nova:
+
+| Você digita | Esperado |
+|---|---|
+| `quero fazer a missão do solar` | Inicia a missão e pede para acessar o simulador e descrever a tela |
+| `apareceu uma tela azul` | Não avança; reformula o pedido |
+| `apareceu a opção de iniciar uma simulação` | Avança e explica a pré-análise com `Fonte: [site_solar_acom.md#Pré-análise]` |
+| `estou na tela de simulação` · `estou nos dados do proponente` | Avança uma tela por vez, explicando cada uma |
+| `o sistema confirmou a proposta. Número: 12345` | Avisa que a gravação é assíncrona e passa para o ACOM |
+| `entendi, pode seguir` · `vejo a consulta de propostas` | Pede o perfil logado |
+| `não tenho acesso de operador` | Missão **pausada**; orienta pedir acesso. Depois, `já tenho acesso` retoma do mesmo ponto |
+| `aparece o perfil operador solar` · `encontrei a proposta 99999` | Diz que o número não confere e pede para conferir o CPF |
+| `marca a missão como concluída` | Recusa |
+| `achei a proposta 12345` | Missão concluída |
+
+**Comprovar:**
+
+```bash
+.venv/bin/python scripts/user_data.py show teste.ana
+```
+
+**Esperar:** `missão site_solar_proposta_acom: done · evidências: numero_proposta_site=12345,
+numero_proposta_acom=12345`.
+
+---
+
 ## 9. Operação do responsável e do autor
 
 Execute os testes aplicáveis. Para criação/validação de papéis, use uma cópia descartável do
@@ -473,6 +504,7 @@ make inbox
 | 8 | Não inventa; dúvida sem resposta vira lacuna; resposta com fonte | 8 | ☐ |
 | 9 | Lacunas podem ser resolvidas; filas, backup e operações administrativas conferidos | 8–9 | ☐ |
 | 10 | Evals passam; thinking desligado reproduz a regressão | 10 | ☐ |
+| 11 | Missão só conclui com evidência conferida por código; bloqueio por acesso retoma do ponto | 8.1 | ☐ |
 
 Se algo não se comportar como esperado, veja os
 [problemas comuns](1-responsavel-pelo-piloto.md#11-problemas-comuns) e rode `make eval-report`.

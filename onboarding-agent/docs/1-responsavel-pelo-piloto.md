@@ -62,6 +62,7 @@ configuração do [README](../README.md#configuração-env).
 | 5 | **Buddy atribuído a cada tutorado** | Você | Seção 3 |
 | 6 | Buddies orientados | Você | Enviar o [Guia do buddy](4-buddy.md) e combinar a rotina de consulta |
 | 7 | Tutorados convidados | Você | Enviar o [Guia do tutorado](5-tutorado.md) e o acesso (seção 4) |
+| 8 | Missões prontas (se a trilha tiver) | Autor + você | `status: approved` no YAML, `make check` sem erros e massa de homologação em `data/homolog_data.yaml` (sem dado real) |
 
 > Módulo sem material **aprovado com banco de perguntas** fica com o quiz indisponível: o tutorado
 > estuda, mas não consegue concluir o módulo.

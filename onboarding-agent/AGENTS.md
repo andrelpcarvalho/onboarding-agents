@@ -3,7 +3,7 @@
 ## O que é
 Sistema multiagente de onboarding com Google ADK (Python 3.11):
 - **Tutor** (`src/onboarding_core/agents/tutor.py`): conversa com o colaborador, conduz a trilha
-  do papel dele, aplica quiz e registra progresso.
+  do papel dele, aplica quiz, conduz missões práticas e registra progresso.
 - **Curador** (`src/onboarding_core/agents/curator.py`): pipeline planner → writer →
   reviewer (loop) → publisher que gera materiais por papel a partir de `data/kb/` e salva como rascunho.
 
@@ -16,6 +16,10 @@ Sistema multiagente de onboarding com Google ADK (Python 3.11):
 - Toda tool: type hints + docstring com `Args:` (vira o schema da function call).
 - Toda tool nova precisa de teste em `tests/` usando o `FakeToolContext` (sem chamar LLM).
 - Prompts ficam em `agents/prompts.py`, em pt-BR.
+- Missão (`data/missions/*.yaml`, `tools/missions.py`): só o código avança checkpoint e conclui.
+  `expected`, `pattern` e `block_on` nunca vão ao modelo; `answer_mission` lê a mensagem do
+  colaborador. CPF de teste só da massa em `data/homolog_data.yaml`. Rode `make check` ao mexer.
+- O Tutor não chama o Curador (Curador é TO-BE/offline): material só vem do catálogo.
 - Nota de quiz NUNCA vem do modelo: só `answer_quiz` grava, via `record_completion` (não exposto).
   Perguntas e gabarito vêm do banco aprovado do material; nunca devolva `correct_option` ao modelo.
 - Mudou prompt, modelo, tool ou `.env`? Rode `make eval` (modelo real) além do `make test`.

@@ -30,7 +30,7 @@ guia abaixo é escrito para uma dessas pessoas e cobre só o que ela precisa faz
    de conhecimento          (rascunho, com fontes)              │
                                                                 │ material aprovado
                                                                 ▼
-   TUTORADO  ◀─── conversa, ensina, aplica quiz ───  TUTOR (agente)
+   TUTORADO  ◀─ conversa, ensina, quiz, missões ──  TUTOR (agente)
        │                                                │      │
        │                    dúvida sem resposta na base │      │ assunto pessoal (RH, saúde,
        │                                                ▼      ▼ acesso...), com consentimento

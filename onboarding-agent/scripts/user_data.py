@@ -39,6 +39,9 @@ def show(user_id: str) -> None:
     print(f"  revisar: {', '.join(s.to_review) or '-'} · quiz em andamento: {s.quiz_module or '-'}")
     print(f"  último acesso: {s.last_seen:%d/%m %H:%M}" if s.last_seen else "  nunca entrou")
     print(f"  buddy: {a.buddy_name} ({a.buddy_contact})" if a else "  buddy: não atribuído")
+    for mid, m in s.missions.items():
+        ev = ", ".join(f"{k}={v}" for k, v in m["evidence"].items()) or "-"
+        print(f"  missão {mid}: {m['status']} · evidências: {ev}")
     print(f"  sessões: {_count(SESSIONS_DB, 'SELECT COUNT(*) FROM sessions WHERE user_id=?', user_id)}"
           f" · trechos na memória: "
           f"{_count(MEMORY_DB, 'SELECT COUNT(*) FROM memory_events WHERE user_id=?', user_id)}"
