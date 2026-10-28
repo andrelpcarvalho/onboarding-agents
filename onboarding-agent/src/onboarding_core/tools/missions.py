@@ -4,6 +4,8 @@
 - Missão > etapas > checkpoints. Cada checkpoint é `confirm`, `describe` ou `capture`.
 - `answer_mission` não recebe argumentos: lê a última mensagem do colaborador, como
   `answer_quiz`. Quem avança checkpoint e conclui a missão é o código, nunca o modelo.
+- Se o colaborador já está à frente, vale o checkpoint mais adiante que a mensagem
+  comprova dentro da mesma etapa; um `capture` nunca é pulado.
 - Palavras-chave esperadas, regex e termos de bloqueio nunca vão ao modelo.
 - Evidências capturadas (ex.: número da proposta) ficam em `user:missions` e o
   critério `done_when` é conferido por código.
@@ -25,6 +27,7 @@ from .. import kb
 from .. import missions as catalog
 from ..config import MISSION_MAX_ATTEMPTS
 from ..missions import get_mission, missions_for_role
+from ..pii import cpf_is_valid
 from ..roles import get_role
 from ..schemas import Checkpoint, Mission
 from . import state_keys as K
@@ -159,8 +162,11 @@ def _check(cp: Checkpoint, text: str) -> tuple[bool, str | None]:
         return _has(AFFIRMATIVE, text) and not _has(NEGATION, text), None
     if cp.kind == "describe":
         return _has(cp.expected, text), None
-    found = re.search(cp.pattern or "", text)
-    return (True, found.group(0)) if found else (False, None)
+    for found in re.finditer(cp.pattern or "", text):
+        # o CPF de teste (liberado no mascaramento) não pode virar número de proposta
+        if not cpf_is_valid(found.group(0)):
+            return True, found.group(0)
+    return False, None
 
 
 def _fail(tool_context, missions, p, m, cp, status: str, **extra) -> dict:
@@ -188,32 +194,68 @@ def answer_mission(tool_context: ToolContext) -> dict:
 
     event_id, text = _last_user_message(tool_context)
     if event_id in p["answered_event_ids"]:
-        return {"ok": False, "error": "aguarde a resposta do colaborador a este checkpoint",
-                "current": mission_view(m, p)}
+        return {"ok": False, "status": "already_evaluated",
+                "error": "esta mensagem do colaborador já foi avaliada",
+                "next_step": "NÃO chame answer_mission de novo agora: responda ao colaborador "
+                "com base no resultado anterior e aguarde a próxima mensagem dele"}
     p["answered_event_ids"] = [*p["answered_event_ids"], event_id]
     step, cp = _checkpoint(m, p)
+    reach = _reachable(step, p["checkpoint"])
 
-    if cp.block_on and _has(cp.block_on, text):
-        p["status"] = "blocked_access"
-        p["blocked"] = {"checkpoint": cp.id, "at": _now()}
-        _save(tool_context, missions)
-        return {"ok": True, "status": "blocked_access",
-                "next_step": "oriente pedir o acesso pelo buddy/canal do papel; a missão "
-                "retoma deste mesmo checkpoint"}
+    # bloqueio vale para o checkpoint atual e para os que ele ainda pode alcançar na etapa
+    for j in reach:
+        later = step.checkpoints[j]
+        if later.block_on and _has(later.block_on, text):
+            p["checkpoint"] = j
+            p["status"] = "blocked_access"
+            p["blocked"] = {"checkpoint": later.id, "at": _now()}
+            _save(tool_context, missions)
+            return {"ok": True, "status": "blocked_access",
+                    "next_step": "oriente pedir o acesso pelo buddy/canal do papel; a missão "
+                    "retoma deste mesmo checkpoint"}
 
-    ok, value = _check(cp, text)
-    if not ok:
+    # o colaborador pode estar à frente: vale o checkpoint mais adiante que a mensagem
+    # comprova, sem atravessar etapa e sem pular um `capture` (evidência obrigatória)
+    hit, value = None, None
+    for j in reach:
+        ok, v = _check(step.checkpoints[j], text)
+        if ok:
+            hit, value = j, v
+    if hit is None:
         return _fail(tool_context, missions, p, m, cp, "not_confirmed")
-    if value is not None:
-        p["evidence"][cp.field] = value
 
-    p["checkpoint"] += 1
+    # o checkpoint atual já teve a explicação dada; os seguintes, até o comprovado, não
+    skipped = [step.checkpoints[j] for j in reach if reach[0] < j <= hit]
+    target = step.checkpoints[hit]
+    if value is not None:
+        p["evidence"][target.field] = value
+    p.setdefault("skipped", []).extend(c.id for c in skipped)
+
+    p["checkpoint"] = hit + 1
     if p["checkpoint"] >= len(step.checkpoints):
         p["step"], p["checkpoint"] = p["step"] + 1, 0
+    extra = {}
+    if skipped:
+        extra["skipped"] = [
+            {"checkpoint": c.id,
+             "explain": [{"cite": f"[{s}]", "text": kb.section(s)} for s in c.explain]}
+            for c in skipped
+        ]
     if p["step"] < len(m.steps):
         _save(tool_context, missions)
-        return {"ok": True, "status": "advanced", "next": mission_view(m, p)}
+        return {"ok": True, "status": "advanced", **extra, "next": mission_view(m, p)}
     return _finish(tool_context, missions, p, m)
+
+
+def _reachable(step, start: int) -> list[int]:
+    """Checkpoints da etapa que a mensagem pode comprovar: do atual até o primeiro
+    `capture` (inclusive). Um `capture` nunca é pulado, porque guarda evidência."""
+    out = []
+    for j in range(start, len(step.checkpoints)):
+        out.append(j)
+        if step.checkpoints[j].kind == "capture":
+            break
+    return out
 
 
 def _finish(tool_context: ToolContext, missions: dict, p: dict, m: Mission) -> dict:

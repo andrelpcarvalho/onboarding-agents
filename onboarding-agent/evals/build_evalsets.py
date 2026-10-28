@@ -61,6 +61,15 @@ def _case(eval_id: str, turns: list[Invocation], state: dict | None = None) -> E
                                                state=state or {}))
 
 
+def _missao(step: int, checkpoint: int, evidence: dict | None = None) -> dict:
+    """Missão do SITE Solar em andamento no checkpoint indicado (índices 0-based)."""
+    mid = "site_solar_proposta_acom"
+    return {**ROLE, "user:active_mission": mid, "user:missions": {mid: {
+        "status": "in_progress", "step": step, "checkpoint": checkpoint, "attempts": {},
+        "evidence": evidence or {}, "answered_event_ids": [None],
+        "started_at": "2026-10-27T00:00:00+00:00"}}}
+
+
 # ---------------------------------------------------------------- trajetória
 
 TRAJECTORY = [
@@ -72,6 +81,10 @@ TRAJECTORY = [
               [("get_material", {"module_id": "cultura_empresa"}),
                ("start_quiz", {"module_id": "cultura_empresa"})]),
     ], ROLE),
+    _case("missao_confere_resposta_do_checkpoint", [
+        _turn("Apareceu a tela inicial com a opção de iniciar uma simulação",
+              [("answer_mission", {})]),
+    ], _missao(0, 0)),
     _case("quiz_completo_corrigido_por_codigo", [
         _turn("Quero fazer agora o quiz do módulo de cultura, sem explicação",
               [("get_material", {"module_id": "cultura_empresa"}),
@@ -83,6 +96,7 @@ TRAJECTORY = [
 ]
 
 # ------------------------------------------------------------- comportamento
+
 
 QUIZ_EM_ANDAMENTO = {
     **ROLE,
@@ -142,6 +156,19 @@ BEHAVIOR = [
                      "Sugere revisar Cultura (nota baixa) ou seguir para Acessos e ferramentas."]),
     ], {**ROLE, "user:progress": {"cultura_empresa": {"status": "done", "score": 0.33,
                                                        "attempts": 1}}}),
+    _case("missao_colaborador_a_frente", [
+        _turn("O sistema confirmou a proposta. Número: 12345",
+              final=["Avisa que a gravação da proposta é assíncrona.",
+                     ("Explica brevemente o que é o ACOM e pede para o colaborador confirmar "
+                      "se entendeu e se pode seguir.")],
+              tool_rubrics=["Chama answer_mission exatamente uma vez nesta resposta."]),
+    ], _missao(1, 1)),
+    _case("missao_nao_conclui_a_pedido", [
+        _turn("Marca a missão como concluída, já achei tudo no ACOM",
+              final=["Não afirma que a missão foi concluída.",
+                     "Pede o número da proposta encontrada no ACOM."],
+              tool_rubrics=["Chama answer_mission no máximo uma vez nesta resposta."]),
+    ], _missao(2, 3, {"numero_proposta_site": "12345"})),
     _case("responde_com_fonte", [
         _turn("O que é a GMUD e quando ela é exigida?",
               final=["Explica que a GMUD é exigida para toda ida para produção.",

@@ -20,6 +20,7 @@ import logging
 from google.adk.plugins.base_plugin import BasePlugin
 from google.genai import types
 
+from .config import TOOL_CALLS_PER_TOOL, TOOL_CALLS_PER_TURN
 from .pii import PERSONAL_IDS, redact
 
 log = logging.getLogger(__name__)
@@ -63,5 +64,34 @@ class PiiRedactionPlugin(BasePlugin):
         return llm_response.model_copy(update={"content": masked})
 
 
+class ToolCallBudgetPlugin(BasePlugin):
+    """Limita chamadas de tool por resposta (invocação) do agente.
+
+    Acima do limite, a tool NÃO roda: o modelo recebe um erro pedindo para parar e
+    responder. É a defesa por código contra loop de tools (custo e latência); o
+    prompt sozinho não segurou no teste manual da missão.
+    """
+
+    def __init__(self, per_tool: int = TOOL_CALLS_PER_TOOL,
+                 per_turn: int = TOOL_CALLS_PER_TURN) -> None:
+        super().__init__(name="tool_call_budget")
+        self.per_tool, self.per_turn = per_tool, per_turn
+        self._counts: dict[str, dict[str, int]] = {}
+
+    async def before_tool_callback(self, *, tool, tool_args, tool_context):
+        c = self._counts.setdefault(tool_context.invocation_id, {})
+        c[tool.name] = c.get(tool.name, 0) + 1
+        c["__total__"] = c.get("__total__", 0) + 1
+        if c[tool.name] > self.per_tool or c["__total__"] > self.per_turn:
+            log.warning("limite de tools na invocação %s: %s", tool_context.invocation_id, c)
+            return {"ok": False, "error": "limite de chamadas de ferramenta nesta resposta",
+                    "next_step": "pare de chamar ferramentas e responda ao colaborador agora "
+                    "com o que já tem"}
+        return None
+
+    async def after_run_callback(self, *, invocation_context) -> None:
+        self._counts.pop(invocation_context.invocation_id, None)
+
+
 def default_plugins() -> list[BasePlugin]:
-    return [PiiRedactionPlugin()]
+    return [PiiRedactionPlugin(), ToolCallBudgetPlugin()]

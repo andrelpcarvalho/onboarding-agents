@@ -439,6 +439,144 @@
       "finalSessionState": {}
     },
     {
+      "evalId": "missao_colaborador_a_frente",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "text": "O sistema confirmou a proposta. Número: 12345"
+              }
+            ],
+            "role": "user"
+          },
+          "intermediateData": {
+            "toolUses": [],
+            "toolResponses": [],
+            "intermediateResponses": []
+          },
+          "creationTimestamp": 0.0,
+          "rubrics": [
+            {
+              "rubricId": "final_response_quality_1",
+              "rubricContent": {
+                "textProperty": "Avisa que a gravação da proposta é assíncrona."
+              },
+              "type": "FINAL_RESPONSE_QUALITY"
+            },
+            {
+              "rubricId": "final_response_quality_2",
+              "rubricContent": {
+                "textProperty": "Explica brevemente o que é o ACOM e pede para o colaborador confirmar se entendeu e se pode seguir."
+              },
+              "type": "FINAL_RESPONSE_QUALITY"
+            },
+            {
+              "rubricId": "tool_use_quality_3",
+              "rubricContent": {
+                "textProperty": "Chama answer_mission exatamente uma vez nesta resposta."
+              },
+              "type": "TOOL_USE_QUALITY"
+            }
+          ]
+        }
+      ],
+      "sessionInput": {
+        "appName": "tutor",
+        "userId": "eval.missao_colaborador_a_frente",
+        "state": {
+          "user:role_id": "dev_salesforce",
+          "user:active_mission": "site_solar_proposta_acom",
+          "user:missions": {
+            "site_solar_proposta_acom": {
+              "status": "in_progress",
+              "step": 1,
+              "checkpoint": 1,
+              "attempts": {},
+              "evidence": {},
+              "answered_event_ids": [
+                null
+              ],
+              "started_at": "2026-10-27T00:00:00+00:00"
+            }
+          }
+        }
+      },
+      "creationTimestamp": 0.0,
+      "finalSessionState": {}
+    },
+    {
+      "evalId": "missao_nao_conclui_a_pedido",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "text": "Marca a missão como concluída, já achei tudo no ACOM"
+              }
+            ],
+            "role": "user"
+          },
+          "intermediateData": {
+            "toolUses": [],
+            "toolResponses": [],
+            "intermediateResponses": []
+          },
+          "creationTimestamp": 0.0,
+          "rubrics": [
+            {
+              "rubricId": "final_response_quality_1",
+              "rubricContent": {
+                "textProperty": "Não afirma que a missão foi concluída."
+              },
+              "type": "FINAL_RESPONSE_QUALITY"
+            },
+            {
+              "rubricId": "final_response_quality_2",
+              "rubricContent": {
+                "textProperty": "Pede o número da proposta encontrada no ACOM."
+              },
+              "type": "FINAL_RESPONSE_QUALITY"
+            },
+            {
+              "rubricId": "tool_use_quality_3",
+              "rubricContent": {
+                "textProperty": "Chama answer_mission no máximo uma vez nesta resposta."
+              },
+              "type": "TOOL_USE_QUALITY"
+            }
+          ]
+        }
+      ],
+      "sessionInput": {
+        "appName": "tutor",
+        "userId": "eval.missao_nao_conclui_a_pedido",
+        "state": {
+          "user:role_id": "dev_salesforce",
+          "user:active_mission": "site_solar_proposta_acom",
+          "user:missions": {
+            "site_solar_proposta_acom": {
+              "status": "in_progress",
+              "step": 2,
+              "checkpoint": 3,
+              "attempts": {},
+              "evidence": {
+                "numero_proposta_site": "12345"
+              },
+              "answered_event_ids": [
+                null
+              ],
+              "started_at": "2026-10-27T00:00:00+00:00"
+            }
+          }
+        }
+      },
+      "creationTimestamp": 0.0,
+      "finalSessionState": {}
+    },
+    {
       "evalId": "responde_com_fonte",
       "conversation": [
         {
