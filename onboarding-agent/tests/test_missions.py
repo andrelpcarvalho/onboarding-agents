@@ -255,3 +255,39 @@ def test_instrucao_do_proximo_checkpoint_manda_resumir_o_que_foi_pulado(ctx):
     cites = [e["cite"] for e in nxt["explain"]]
     assert cites[:2] == ["[site_solar_acom.md#Simulação]", "[site_solar_acom.md#Dados da proposta]"]
     assert "[site_solar_acom.md#O que é o ACOM]" in cites
+
+
+# ---- revisão pós-merge: relato negativo nunca comprova checkpoint ----
+
+@pytest.mark.parametrize("ate, msg", [
+    (["vejo o simulador"], "não sei onde fica a simulação"),
+    (ATE_PERFIL[:4], "não entendi o que é proposta no ACOM"),
+    (ATE_PERFIL[:4], "a tela não aparece pra mim"),
+])
+def test_relato_negativo_nao_avanca(ctx, ate, msg):
+    assert _iniciar(ctx)["ok"]
+    for m in ate:
+        ctx.say(m)
+        answer_mission(ctx)
+    before = dict(ctx.state[K.MISSIONS][MISSAO])
+    ctx.say(msg)
+    assert answer_mission(ctx)["status"] == "not_confirmed"
+    after = ctx.state[K.MISSIONS][MISSAO]
+    assert (after["step"], after["checkpoint"]) == (before["step"], before["checkpoint"])
+
+
+def test_nao_encontrei_a_proposta_nao_conclui_a_missao(ctx):
+    _ate_perfil(ctx)
+    ctx.say("Perfil operador solar.")
+    answer_mission(ctx)
+    ctx.say("não encontrei a proposta 12345")
+    assert answer_mission(ctx)["status"] == "not_confirmed"
+    assert ctx.state[K.MISSIONS][MISSAO]["status"] == "in_progress"
+
+
+def test_negativa_sem_relato_de_falha_ainda_avanca(ctx):
+    assert _iniciar(ctx)["ok"]
+    ctx.say("vejo o simulador")
+    answer_mission(ctx)
+    ctx.say("estou na tela de simulação, não deu nenhum erro")
+    assert answer_mission(ctx)["status"] == "advanced"

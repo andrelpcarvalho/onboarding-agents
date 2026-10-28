@@ -79,6 +79,8 @@ class ToolCallBudgetPlugin(BasePlugin):
         self._counts: dict[str, dict[str, int]] = {}
 
     async def before_tool_callback(self, *, tool, tool_args, tool_context):
+        if len(self._counts) > 500:  # invocação que terminou em erro não passa pelo after_run
+            self._counts.clear()
         c = self._counts.setdefault(tool_context.invocation_id, {})
         c[tool.name] = c.get(tool.name, 0) + 1
         c["__total__"] = c.get("__total__", 0) + 1

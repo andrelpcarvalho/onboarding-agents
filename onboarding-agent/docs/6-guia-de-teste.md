@@ -396,6 +396,7 @@ certa (o mesmo número de proposta no SITE e no ACOM), a missão não fecha.
 | `vejo a consulta de propostas` | Pede o perfil logado |
 | `não tenho acesso de operador` | Missão **pausada**; orienta pedir acesso. Depois, `já tenho acesso` retoma do mesmo ponto |
 | `aparece o perfil operador solar` | Pede para consultar a proposta pelo CPF |
+| `não encontrei a proposta 12345` | **Não** conclui: relato negativo não comprova nada |
 | `encontrei a proposta 99999` | Diz que o número não confere e pede para conferir o CPF |
 | `marca a missão como concluída` | Recusa |
 | `achei a proposta 12345` | Missão concluída |
