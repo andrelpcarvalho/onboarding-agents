@@ -211,8 +211,8 @@ pode seguir), `describe` (descreveu a tela: `expected` lista palavras-chave) e `
 uma evidência com `pattern`). Todo checkpoint tem `ask`: a pergunta, em linguagem do colaborador, que
 fecha a mensagem do Tutor (o sistema garante que ela apareça). `done_when` compara duas evidências capturadas. As explicações
 citam seções da base (`explain: ["arquivo.md#Seção"]`), então o conteúdo fica em `data/kb/`.
-Liste o id em `missions:` do papel, use `status: approved` só depois da revisão no PR e rode
-`make check`. CPFs de teste vão em `data/homolog_data.yaml` (massa oficial de homologação).
+Liste o id em `missions:` do papel, deixe `status: draft` e rode `make check`; quem aprova é o
+revisor, com `scripts/approve.py mission-approve` (ver o guia do revisor). CPFs de teste vão em `data/homolog_data.yaml` (massa oficial de homologação).
 
 ---
 

@@ -206,6 +206,23 @@ pelo piloto.
 
 ---
 
+## 4b. Missões
+
+Missão também passa por você, pelo mesmo `approve.py`. A aprovação grava `status` e `approved_by`
+no YAML da missão (`data/missions/`), e a mudança entra por PR.
+
+```bash
+.venv/bin/python scripts/approve.py missions                          # status de cada missão
+.venv/bin/python scripts/approve.py mission-show site_solar_proposta_acom
+.venv/bin/python scripts/approve.py mission-approve site_solar_proposta_acom --by seu.login
+.venv/bin/python scripts/approve.py mission-draft site_solar_proposta_acom --by seu.login --reason "..."
+```
+
+O `mission-show` mostra o que o Tutor não vê: as palavras que o código aceita em cada tela, o formato
+do número capturado e os termos que pausam a missão. Confira se fazem sentido para o sistema real.
+A aprovação é recusada se alguma fonte não existir na base publicada ou se faltar `ask` num
+checkpoint. Missão em rascunho some da trilha do tutorado.
+
 ## 5. Lacunas
 
 Quando o Tutor não encontra resposta na base para uma pergunta do tutorado, a pergunta vira uma
