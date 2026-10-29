@@ -107,6 +107,8 @@ def check_missions(errors: list[str], warnings: list[str]) -> None:
                 for src in [*cp.explain, *([cp.fallback_source] if cp.fallback_source else [])]:
                     if src not in sources:
                         errors.append(f"{where}: fonte '{src}' não existe em data/kb/")
+                if not cp.ask:
+                    warnings.append(f"{where}: sem `ask` (pergunta que fecha a mensagem do Tutor)")
                 if cp.pattern:
                     try:
                         re.compile(cp.pattern)

@@ -107,6 +107,7 @@ def progress_snapshot(state: Mapping[str, Any], user_id: str | None = None) -> d
         "to_review": to_review,
         "modules": modules,
         **missions_overview(state),
+        "mission_check": state.get(K.MISSION_CHECK),
     }
 
 

@@ -97,3 +97,59 @@ async def test_orcamento_de_tools_por_resposta():
 
     await plug.after_run_callback(invocation_context=turn1)  # nova mensagem zera o orçamento
     assert await plug.before_tool_callback(tool=tool, tool_args={}, tool_context=turn1) is None
+
+
+
+async def test_turno_com_pii_mascarada_ganha_instrucao_de_lembrete():
+    from google.adk.models.llm_request import LlmRequest
+
+    req = LlmRequest(contents=[
+        types.Content(role="user", parts=[types.Part(text="Meu CPF é <CPF>, informo onde?")]),
+        types.Content(role="model", parts=[types.Part(function_call=types.FunctionCall(
+            name="search_knowledge_base", args={}))]),
+        types.Content(role="user", parts=[types.Part(function_response=types.FunctionResponse(
+            name="search_knowledge_base", response={"found": False}))]),
+    ], config=types.GenerateContentConfig(system_instruction="base"))
+    await PiiRedactionPlugin().before_model_callback(callback_context=None, llm_request=req)
+    assert "não é preciso compartilhar dados pessoais" in str(req.config.system_instruction)
+    assert "<CPF>" in str(req.config.system_instruction)
+
+
+async def test_turno_sem_pii_nao_ganha_instrucao():
+    from google.adk.models.llm_request import LlmRequest
+
+    req = LlmRequest(contents=[types.Content(role="user", parts=[types.Part(text="oi")])],
+                     config=types.GenerateContentConfig(system_instruction="base"))
+    await PiiRedactionPlugin().before_model_callback(callback_context=None, llm_request=req)
+    assert str(req.config.system_instruction) == "base"
+
+
+async def test_lembrete_de_pii_chega_ao_modelo_no_runner():
+    """Ponta a ponta com modelo falso: CPF mascarado na entrada vira instrução do turno."""
+    from collections.abc import AsyncGenerator
+
+    from google.adk.agents import LlmAgent
+    from google.adk.apps import App
+    from google.adk.models.base_llm import BaseLlm
+    from google.adk.models.llm_response import LlmResponse
+    from google.adk.runners import InMemoryRunner
+
+    seen: dict = {}
+
+    class Spy(BaseLlm):
+        model: str = "spy"
+
+        async def generate_content_async(self, llm_request, stream: bool = False
+                                         ) -> AsyncGenerator[LlmResponse, None]:
+            seen["si"] = str(llm_request.config.system_instruction)
+            seen["user"] = llm_request.contents[-1].parts[0].text
+            yield LlmResponse(content=types.Content(role="model", parts=[types.Part(text="ok")]))
+
+    agent = LlmAgent(name="t", model=Spy(), instruction="base")
+    runner = InMemoryRunner(app=App(name="t", root_agent=agent, plugins=[PiiRedactionPlugin()]))
+    s = await runner.session_service.create_session(app_name="t", user_id="u")
+    msg = types.Content(role="user", parts=[types.Part(text="Meu CPF é 529.982.247-25, ok?")])
+    async for _ in runner.run_async(user_id="u", session_id=s.id, new_message=msg):
+        pass
+    assert "529.982" not in seen["user"] and "<CPF>" in seen["user"]
+    assert "não é preciso compartilhar dados pessoais" in seen["si"]

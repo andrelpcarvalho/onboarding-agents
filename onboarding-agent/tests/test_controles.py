@@ -132,3 +132,98 @@ async def test_tutor_sincroniza_papel_antes_de_responder(tmp_catalog):
     s = await runner.session_service.get_session(app_name="tutor", user_id="joao", session_id=s.id)
     assert s.state[K.ROLE_ID] == "analista_negocios"
     assert "Analista de Negócios" in seen["instruction"]
+
+
+
+async def test_relatorio_usa_papel_atribuido_mesmo_sem_nova_conversa(tmp_catalog, monkeypatch, tmp_path):
+    from onboarding_core import reports
+
+    monkeypatch.setattr(reports, "SESSIONS_DB", tmp_path / "s.db")
+    tmp_catalog.assign_role("nova.pessoa", "analista_negocios", "andre")
+    s = await reports.tutee_status("nova.pessoa")
+    assert s.role == "Analista de Negócios" and s.completed == "0/4"
+
+
+
+def test_pergunta_de_consentimento_traz_nome_e_contato(ctx, tmp_catalog):
+    tmp_catalog.assign_buddy(ctx.user_id, "maria", "Maria Eval", "@maria.eval no Slack", "rh")
+    r = _propor(ctx)
+    assert "Maria Eval" in r["ask"] and "@maria.eval no Slack" in r["ask"]
+    assert r["ask"].endswith("Responda sim ou não.")
+
+
+def test_pergunta_sem_buddy_usa_canal_do_papel(ctx, tmp_catalog):
+    r = _propor(ctx)
+    assert "#onboarding-dev" in r["ask"] and "responsável" in r["ask"]
+
+
+
+def test_bloqueio_da_missao_vem_antes_do_buddy(ctx, tmp_catalog):
+    """Eval de 28/10: 'não tenho acesso de operador' foi direto para o buddy, sem
+    registrar o bloqueio na missão."""
+    from test_missions import ATE_PERFIL, MISSAO, _iniciar
+
+    from onboarding_core.tools import answer_mission
+
+    tmp_catalog.assign_role(ctx.user_id, "analista_negocios", "rh")
+    _iniciar(ctx)
+    for m in ATE_PERFIL:
+        ctx.say(m)
+        answer_mission(ctx)
+    ctx.say("Não tenho acesso de operador no ACOM")
+    r = propose_escalation("acesso", "sem acesso de operador no ACOM", ctx)
+    assert not r["ok"] and "answer_mission" in r["next_step"]
+    assert tmp_catalog.list_escalations() == []
+
+    b = answer_mission(ctx)
+    assert b["status"] == "blocked_access" and "continua daqui" in b["tell"]
+    assert propose_escalation("acesso", "sem acesso de operador no ACOM", ctx)["ok"]
+    assert ctx.state[K.MISSIONS][MISSAO]["status"] == "blocked_access"
+
+
+def test_duvida_fora_da_missao_vai_ao_buddy_sem_contar_tentativa(ctx, tmp_catalog):
+    from test_missions import MISSAO, _iniciar
+
+    _iniciar(ctx)
+    ctx.say("quanto ganha um dev pleno aqui?")
+    assert propose_escalation("rh", "dúvida sobre faixa salarial", ctx)["ok"]
+    assert ctx.state[K.MISSIONS][MISSAO]["attempts"] == {}
+
+
+async def test_conferencia_da_missao_chega_ao_modelo_sem_tool(tmp_catalog):
+    """Ponta a ponta com modelo falso que NÃO chama tool: a missão avança mesmo assim e o
+    resultado aparece na instrução."""
+    from collections.abc import AsyncGenerator
+
+    from google.adk.apps import App
+    from google.adk.models.base_llm import BaseLlm
+    from google.adk.models.llm_response import LlmResponse
+    from google.adk.runners import InMemoryRunner
+    from google.genai import types
+
+    seen: dict = {}
+
+    class Mute(BaseLlm):
+        model: str = "mute"
+
+        async def generate_content_async(self, llm_request, stream: bool = False
+                                         ) -> AsyncGenerator[LlmResponse, None]:
+            seen["si"] = str(llm_request.config.system_instruction)
+            yield LlmResponse(content=types.Content(role="model", parts=[types.Part(text="ok")]))
+
+    agent = build_tutor()
+    agent.model = Mute()
+    agent.generate_content_config = None
+    runner = InMemoryRunner(app=App(name="tutor", root_agent=agent))
+    tmp_catalog.assign_role("ana", "dev_salesforce", "rh")
+    mid = "site_solar_proposta_acom"
+    s = await runner.session_service.create_session(app_name="tutor", user_id="ana", state={
+        K.ACTIVE_MISSION: mid, K.MISSIONS: {mid: {
+            "status": "in_progress", "step": 0, "checkpoint": 0, "attempts": {},
+            "evidence": {}, "answered_event_ids": [None], "started_at": "x"}}})
+    msg = types.Content(role="user", parts=[types.Part(text="Apareceu a opção de simulação")])
+    async for _ in runner.run_async(user_id="ana", session_id=s.id, new_message=msg):
+        pass
+    s = await runner.session_service.get_session(app_name="tutor", user_id="ana", session_id=s.id)
+    assert (s.state[K.MISSIONS][mid]["step"], s.state[K.MISSIONS][mid]["checkpoint"]) == (1, 0)
+    assert '"mission_check": {' in seen["si"] and '"status": "advanced"' in seen["si"]

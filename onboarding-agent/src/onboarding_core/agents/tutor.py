@@ -24,13 +24,15 @@ from ..tools import (
     start_module,
     start_quiz,
 )
+from ..tools import state_keys as K
+from ..tools.missions import auto_check
 from ..tools.progress import progress_snapshot, sync_role
 from . import prompts
 
 
 def _tutor_instruction(ctx: ReadonlyContext) -> str:
     """Monta a instrução com o progresso já embutido (recalculado a cada chamada
-    ao modelo). Evita as idas e voltas get_my_progress/list_roles no começo da
+    ao modelo). Evita idas e voltas extras ao modelo no começo da
     conversa, que custavam ~2 chamadas ao LLM por mensagem inicial."""
     snapshot = progress_snapshot(ctx.state, ctx.user_id)
     return prompts.TUTOR.replace("<<CONTEXTO>>", json.dumps(snapshot, ensure_ascii=False))
@@ -51,9 +53,13 @@ def _generate_config() -> types.GenerateContentConfig | None:
     )
 
 
-def _sync_role(callback_context) -> None:
-    """Antes de cada resposta: papel = o atribuído pelo responsável no catálogo."""
+def _before_turn(callback_context) -> None:
+    """Antes de cada resposta, por código:
+    1. papel = o atribuído pelo responsável no catálogo;
+    2. a mensagem do colaborador é conferida contra a missão em andamento, e o
+       resultado vai para o contexto do modelo (`mission_check`)."""
     sync_role(callback_context.state, callback_context.user_id)
+    callback_context.state[K.MISSION_CHECK] = auto_check(callback_context)
 
 
 async def _save_session_to_memory(callback_context) -> None:
@@ -94,6 +100,6 @@ def build_tutor(name: str = "tutor") -> LlmAgent:
             # Curador fora do Tutor (TO-BE): material só vem do catálogo, nunca gerado
             # sob demanda durante a conversa com o colaborador.
         ],
-        before_agent_callback=_sync_role,
+        before_agent_callback=_before_turn,
         after_agent_callback=_save_session_to_memory,
     )

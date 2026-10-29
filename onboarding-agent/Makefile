@@ -2,7 +2,7 @@ PY := .venv/bin/python
 ADK := .venv/bin/adk
 SERVICES := --session_service_uri sqlite:///.adk/sessions.db --memory_service_uri sqlite:///.adk/memory.db
 
-.PHONY: setup test lint web chat curate approve gaps backup check new-role inbox buddy eval eval-trajectory eval-behavior eval-report
+.PHONY: setup test lint web chat curate approve gaps backup check new-role inbox buddy eval eval-stable eval-trajectory eval-behavior eval-report eval-history
 
 setup:
 	python3.11 -m venv .venv
@@ -68,4 +68,17 @@ eval-behavior: eval-fixture
 eval-report:
 	$(PY) evals/report.py
 
-eval: eval-trajectory eval-behavior
+eval-history:
+	$(PY) evals/report.py --history
+
+# Roda os dois conjuntos mesmo se o primeiro falhar (antes, uma falha de trajetória
+# impedia o de comportamento e o eval-report mostrava o resultado ANTIGO dele).
+eval:
+	@$(MAKE) --no-print-directory eval-trajectory; t=$$?; \
+	$(MAKE) --no-print-directory eval-behavior; b=$$?; \
+	$(PY) evals/report.py; exit $$(( t || b ))
+
+# Duas rodadas seguidas: critério de estabilidade antes de abrir PR que mexe no prompt.
+eval-stable:
+	@$(MAKE) --no-print-directory eval; r1=$$?; echo '--- 2ª rodada ---'; \
+	$(MAKE) --no-print-directory eval; r2=$$?; exit $$(( r1 || r2 ))

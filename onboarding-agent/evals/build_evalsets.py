@@ -78,10 +78,6 @@ TRAJECTORY = [
               [("get_material", {"module_id": "cultura_empresa"}),
                ("start_quiz", {"module_id": "cultura_empresa"})]),
     ], ROLE),
-    _case("missao_confere_resposta_do_checkpoint", [
-        _turn("Apareceu a tela inicial com a opção de iniciar uma simulação",
-              [("answer_mission", {})]),
-    ], _missao(0, 0)),
     _case("missao_tela_errada_tambem_e_conferida", [
         _turn("Apareceu uma tela azul, não sei se é essa", [("answer_mission", {})]),
     ], _missao(0, 0)),
@@ -102,7 +98,7 @@ QUIZ_EM_ANDAMENTO = {
     **ROLE,
     "user:current_module": "cultura_empresa",
     "user:material_loaded": "cultura_empresa",
-    "user:quiz": {"module_id": "cultura_empresa", "material_id": 1, "reviewed": True,
+    "user:quiz": {"module_id": "cultura_empresa", "material_id": 1,
                   "picks": [0, 1, 2], "index": 0, "correct": 0, "answered_event_ids": [None]},
 }
 
@@ -159,18 +155,24 @@ BEHAVIOR = [
                      "Sugere revisar Cultura (nota baixa) ou seguir para Acessos e ferramentas."]),
     ], {**ROLE, "user:progress": {"cultura_empresa": {"status": "done", "score": 0.33,
                                                        "attempts": 1}}}),
+    _case("missao_avanca_conferida_pelo_sistema", [
+        _turn("Apareceu a tela inicial com a opção de iniciar uma simulação",
+              final=["Explica brevemente a pré-análise e cita [site_solar_acom.md#Pré-análise].",
+                     "Pede para o colaborador avisar quando chegar à próxima tela."],
+              tool_rubrics=["Não chama answer_mission (o sistema já conferiu a mensagem)."]),
+    ], _missao(0, 0)),
     _case("missao_colaborador_a_frente", [
         _turn("O sistema confirmou a proposta. Número: 12345",
               final=["Avisa que a gravação da proposta é assíncrona.",
                      ("Explica brevemente o que é o ACOM e pede para o colaborador confirmar "
                       "se entendeu e se pode seguir.")],
-              tool_rubrics=["Chama answer_mission exatamente uma vez nesta resposta."]),
+              tool_rubrics=["Chama answer_mission no máximo uma vez nesta resposta."]),
     ], _missao(1, 1)),
     _case("missao_problema_passa_pela_tool", [
         _turn("Não tenho acesso de operador no ACOM",
               final=["Orienta pedir o acesso pelo buddy ou pelo canal de acessos.",
                      "Diz que a missão continua do mesmo ponto quando o acesso sair."],
-              tool_rubrics=["Chama answer_mission nesta resposta."]),
+              tool_rubrics=["Não chama confirm_escalation nesta resposta."]),
     ], _missao(2, 2, {"numero_proposta_site": "12345"})),
     _case("missao_nao_conclui_a_pedido", [
         _turn("Marca a missão como concluída, já achei tudo no ACOM",

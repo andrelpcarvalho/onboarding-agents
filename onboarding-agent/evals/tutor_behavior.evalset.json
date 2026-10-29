@@ -64,7 +64,6 @@
           "user:quiz": {
             "module_id": "cultura_empresa",
             "material_id": 1,
-            "reviewed": true,
             "picks": [
               0,
               1,
@@ -439,6 +438,74 @@
       "finalSessionState": {}
     },
     {
+      "evalId": "missao_avanca_conferida_pelo_sistema",
+      "conversation": [
+        {
+          "invocationId": "",
+          "userContent": {
+            "parts": [
+              {
+                "text": "Apareceu a tela inicial com a opção de iniciar uma simulação"
+              }
+            ],
+            "role": "user"
+          },
+          "intermediateData": {
+            "toolUses": [],
+            "toolResponses": [],
+            "intermediateResponses": []
+          },
+          "creationTimestamp": 0.0,
+          "rubrics": [
+            {
+              "rubricId": "final_response_quality_1",
+              "rubricContent": {
+                "textProperty": "Explica brevemente a pré-análise e cita [site_solar_acom.md#Pré-análise]."
+              },
+              "type": "FINAL_RESPONSE_QUALITY"
+            },
+            {
+              "rubricId": "final_response_quality_2",
+              "rubricContent": {
+                "textProperty": "Pede para o colaborador avisar quando chegar à próxima tela."
+              },
+              "type": "FINAL_RESPONSE_QUALITY"
+            },
+            {
+              "rubricId": "tool_use_quality_3",
+              "rubricContent": {
+                "textProperty": "Não chama answer_mission (o sistema já conferiu a mensagem)."
+              },
+              "type": "TOOL_USE_QUALITY"
+            }
+          ]
+        }
+      ],
+      "sessionInput": {
+        "appName": "tutor",
+        "userId": "eval.missao_avanca_conferida_pelo_sistema",
+        "state": {
+          "user:role_id": "dev_salesforce",
+          "user:active_mission": "site_solar_proposta_acom",
+          "user:missions": {
+            "site_solar_proposta_acom": {
+              "status": "in_progress",
+              "step": 0,
+              "checkpoint": 0,
+              "attempts": {},
+              "evidence": {},
+              "answered_event_ids": [
+                null
+              ],
+              "started_at": "2026-10-27T00:00:00+00:00"
+            }
+          }
+        }
+      },
+      "creationTimestamp": 0.0,
+      "finalSessionState": {}
+    },
+    {
       "evalId": "missao_colaborador_a_frente",
       "conversation": [
         {
@@ -475,7 +542,7 @@
             {
               "rubricId": "tool_use_quality_3",
               "rubricContent": {
-                "textProperty": "Chama answer_mission exatamente uma vez nesta resposta."
+                "textProperty": "Chama answer_mission no máximo uma vez nesta resposta."
               },
               "type": "TOOL_USE_QUALITY"
             }
@@ -543,7 +610,7 @@
             {
               "rubricId": "tool_use_quality_3",
               "rubricContent": {
-                "textProperty": "Chama answer_mission nesta resposta."
+                "textProperty": "Não chama confirm_escalation nesta resposta."
               },
               "type": "TOOL_USE_QUALITY"
             }

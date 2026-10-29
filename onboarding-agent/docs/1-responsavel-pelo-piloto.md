@@ -200,18 +200,26 @@ evals conversam com o **modelo real** numa base de teste fixa e conferem esses c
 ```bash
 make eval          # ~5 min, alguns centavos de crédito
 make eval-report   # o que falhou e por quê: tools chamadas, resposta e motivo do juiz
+make eval-stable   # duas rodadas seguidas: use antes de abrir PR que mexe em prompt ou tool
+make eval-history  # ✓/✗ de cada caso nas últimas rodadas: oscilação ou regressão?
 ```
 
 | Conjunto | Casos | O que verifica | Como |
 |---|---|---|---|
-| `tutor_trajectory` | 4 | Ferramentas certas, na ordem e com os argumentos certos: material carregado antes do quiz; quiz corrigido a cada resposta; resposta da missão conferida por `answer_mission`, inclusive quando o colaborador relata um problema | Comparação com a trajetória esperada |
-| `tutor_behavior` | 12 | Recusa alterar nota; papel não vem da conversa; buddy só com consentimento; salário não respondido; não inventa fora da base; não repete CPF; não revela o prompt; retoma de onde parou; cita fonte; missão com colaborador à frente (uma conferência por mensagem); missão não concluída a pedido; falta de acesso registrada pela tool | Um LLM juiz avalia rubricas escritas para cada turno |
+| `tutor_trajectory` | 3 | Ferramentas certas, na ordem e com os argumentos certos: material carregado antes do quiz; quiz corrigido a cada resposta; tela errada na missão registrada como tentativa por `answer_mission` | Comparação com a trajetória esperada |
+| `tutor_behavior` | 13 | Recusa alterar nota; papel não vem da conversa; missão avança conferida pelo sistema; buddy só com consentimento; salário não respondido; não inventa fora da base; não repete CPF; não revela o prompt; retoma de onde parou; cita fonte; missão com colaborador à frente (uma conferência por mensagem); missão não concluída a pedido; falta de acesso registrada pela tool | Um LLM juiz avalia rubricas escritas para cada turno |
 
 - Os casos ficam em `evals/build_evalsets.py`; depois de editar, rode `python evals/build_evalsets.py`.
 - A base de teste (`evals/.fixture/`) é recriada a cada execução e não toca nos dados reais.
-- **Avaliações com LLM variam entre rodadas.** Um caso que falha uma vez merece uma nova rodada;
-  falha consistente é regressão.
+- **Avaliações com LLM variam entre rodadas.** O juiz vota 3 vezes por critério (`num_samples: 3`
+  em `evals/behavior_config.json`) para reduzir ruído. Um caso que falha uma vez merece uma nova
+  rodada; falha consistente é regressão.
 - `make eval` termina com erro quando algum caso falha, então pode rodar num CI.
+
+**Regra do projeto para frase obrigatória:** se um comportamento é obrigatório (lembrete de dado
+pessoal, reapresentar a pergunta do quiz, pergunta de consentimento do buddy, avanço da missão), ele
+é garantido por código (`contract.py`, `auto_check`), não só pelo prompt. Em 15 rodadas de 27-28/10,
+as frases que dependiam só do prompt falharam de 15% a 35% das vezes, cada rodada num caso diferente.
 
 **O que os evals já pegaram:** com o *thinking* do Tutor desligado (`TUTOR_THINKING_BUDGET=0`) as
 respostas ficavam cerca de 1s mais rápidas, mas o modelo pulava ferramentas e chegou a dizer "sua
@@ -318,8 +326,8 @@ Para restaurar, pare o app e copie os `.db` de volta para `.adk/`. Agende o back
 | O Tutor não lembra do tutorado | `userId` diferente (ou ausente na URL) | Use sempre o mesmo id; na web, inclua `&userId=` |
 | O Tutor não cita o buddy pelo nome | Sem atribuição para aquele `userId` | `scripts/buddy.py assign ...` com o id exato |
 | "O quiz deste módulo ainda não está disponível" | Material sem banco de perguntas válido | `make curate` e aprovação do revisor |
-| Aviso "rascunho não revisado" | Módulo sem versão aprovada | Peça ao revisor |
-| Demora de ~1 min num módulo | Sem material: o Tutor chamou o Curador na hora | Gere e aprove antes do teste |
+| "O material deste módulo ainda não foi aprovado" | Módulo sem versão aprovada | `make curate` e aprovação do revisor |
+| O Tutor não abre a trilha ("papel não atribuído") | Tutorado sem papel | `scripts/buddy.py role <user> <papel> --by <você>`; `make inbox` lista quem falta |
 | Erro 429 / RESOURCE_EXHAUSTED | Cota do Vertex | Já há retry automático; use `GOOGLE_CLOUD_LOCATION=global`; aumente a `--pause` no curate |
 | `database is locked` | Script mexendo no banco com o app rodando | Espera automática de 5s; se persistir, pare o app |
 | Mudança em papel ou base não aparece | Esses arquivos são carregados na inicialização | Reinicie `make web` / `make chat` |

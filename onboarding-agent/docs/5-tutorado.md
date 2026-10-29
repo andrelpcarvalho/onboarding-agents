@@ -49,8 +49,8 @@ A tela tem detalhes técnicos na lateral (é uma tela de testes); converse pela 
 - **Partes curtas:** depois de cada parte, responda "sim", peça um exemplo ou faça uma pergunta.
 - **Fontes:** quando fala de processo da empresa, o Tutor mostra de onde tirou, como
   `[pipeline_deploy.md#GMUD]`.
-- **"Rascunho não revisado":** o conteúdo ainda não foi revisado por uma pessoa. Use com cuidado
-  e anote o que parecer errado.
+- **"Ainda não aprovado":** o material do módulo ainda não foi revisado por uma pessoa, então o
+  Tutor não mostra. Siga para outro módulo ou missão e avise o seu buddy.
 - **Ordem:** alguns módulos dependem de outros; se você pedir para pular, ele indica o que vem antes.
 
 ---

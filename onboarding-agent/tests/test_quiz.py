@@ -21,6 +21,7 @@ def test_quiz_sorteia_do_banco_aprovado_sem_vazar_gabarito(ctx, tmp_catalog):
     r = _iniciar(ctx, tmp_catalog, quiz=bank(6))
     assert r["ok"]
     assert r["present"]["question"].startswith("P") and set(r["present"]["options"]) == set("ABCD")
+    assert r["present"]["ask"] == "Responda só com a letra: A, B, C ou D."
     assert "correct" not in str(r["present"])
     # o estado guarda só referências, nunca o gabarito
     q = ctx.state[K.QUIZ]
