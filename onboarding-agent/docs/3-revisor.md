@@ -37,7 +37,7 @@ Cada material tem duas partes, aprovadas juntas:
 
 | Status | O tutorado vê? |
 |---|---|
-| **rascunho** | Só se **não houver** versão aprovada do módulo, e com o aviso "rascunho não revisado" |
+| **rascunho** | **Não.** Só a versão aprovada chega ao tutorado; sem ela, o Tutor diz que o módulo ainda não foi aprovado |
 | **APROVADO** | Sim. Só existe uma aprovada por módulo; aprovar uma nova tira a anterior de uso. |
 | **fora de uso** | Não. Fica no histórico, com quem descartou e por quê. |
 
@@ -237,8 +237,8 @@ Várias lacunas no mesmo módulo indicam um buraco no material.
 .venv/bin/python scripts/curate_role.py dev_salesforce --missing-only
 ```
 
-Os aprovados que citam o documento saem de uso. Até haver nova aprovação, o Tutor usa o rascunho
-mais recente, com aviso.
+Os aprovados que citam o documento saem de uso. Até haver nova aprovação, o módulo fica
+**indisponível** para o tutorado: aprove a nova versão o quanto antes.
 
 ---
 

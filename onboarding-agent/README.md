@@ -84,7 +84,8 @@ O Tutor não chama o Curador: se falta material, ele registra a lacuna.
 
 **Missão:** prática guiada em sistemas de homologação (`data/missions/*.yaml`), dividida em
 etapas e checkpoints (`confirm`, `describe`, `capture`). O Tutor conduz e explica com trechos da
-base; o código confere cada resposta e só conclui a missão quando as evidências batem (ex.: o
+base; o código confere cada mensagem **antes** de o modelo responder (`auto_check`, em
+`before_agent_callback`) e só conclui a missão quando as evidências batem (ex.: o
 número da proposta no ACOM é o mesmo do SITE). Se o colaborador já está à frente, vale o checkpoint
 mais adiante que a mensagem comprova dentro da etapa; um `capture` (evidência) nunca é pulado.
 Relato negativo ("não encontrei a proposta 12345", "não sei onde fica") nunca comprova checkpoint.
@@ -223,6 +224,7 @@ Rode antes de mudar prompt, modelo, ferramenta ou `.env`. Os casos ficam em
 | Rascunho chegar ao colaborador | Material e quiz só da versão aprovada | `tools/catalog.py`, `tools/quiz.py` |
 | Material inventado ou distorcido | Fontes obrigatórias e checadas + aprovação humana | `scripts/approve.py` |
 | Missão dada como concluída sem prova | Checkpoints conferidos por código; palavras-chave e regex nunca vão ao modelo; conclusão só com `done_when` | `tools/missions.py` |
+| Frase obrigatória esquecida pelo modelo (lembrete de PII, pergunta do quiz, consentimento do buddy, retomada da missão) | Contrato de resposta: o código confere a resposta final e acrescenta o que faltou | `contract.py`, `guardrails.py` (`ResponseContractPlugin`) |
 | Loop de ferramentas (custo e latência) | Até 3 chamadas da mesma tool e 10 no total por resposta; acima disso a tool não roda. Teto de 15 chamadas ao modelo por resposta | `guardrails.py` (`ToolCallBudgetPlugin`), `services.py` |
 | Dado real em missão | Só homologação; CPF de teste vem da massa (`data/homolog_data.yaml`), única exceção ao mascaramento | `tools/missions.py`, `pii.py` |
 

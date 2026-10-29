@@ -21,7 +21,7 @@ from google.adk.plugins.base_plugin import BasePlugin
 from google.genai import types
 
 from .config import TOOL_CALLS_PER_TOOL, TOOL_CALLS_PER_TURN
-from .pii import PERSONAL_IDS, redact
+from .pii import PERSONAL_IDS, PLACEHOLDERS, redact
 
 log = logging.getLogger(__name__)
 
@@ -46,6 +46,19 @@ def _redact_content(
     return content.model_copy(update={"parts": new_parts}), found
 
 
+def _masked_in_last_user_turn(contents) -> list[str]:
+    """Marcadores de PII (<CPF>, <EMAIL>...) na última mensagem de texto do colaborador."""
+    for c in reversed(contents or []):
+        if c.role != "user" or not c.parts:
+            continue
+        texts = [p.text for p in c.parts if p.text]
+        if not texts:  # resposta de tool vem como role=user sem texto: segue procurando
+            continue
+        joined = " ".join(texts)
+        return [ph for ph in dict.fromkeys(PLACEHOLDERS.values()) if ph in joined]
+    return []
+
+
 class PiiRedactionPlugin(BasePlugin):
     def __init__(self) -> None:
         super().__init__(name="pii_redaction")
@@ -56,12 +69,52 @@ class PiiRedactionPlugin(BasePlugin):
             log.info("PII mascarada na entrada: %s", ents)
         return masked
 
+    async def before_model_callback(self, *, callback_context, llm_request):
+        """Se a última mensagem do colaborador teve dado pessoal mascarado, a resposta
+        tem que lembrar de não compartilhar: vira instrução do turno, não depende de o
+        modelo notar o marcador (o eval mostrou ele ignorando <CPF>)."""
+        found = _masked_in_last_user_turn(llm_request.contents)
+        if found:
+            note = ("ATENÇÃO NESTE TURNO: a última mensagem do colaborador tinha dado pessoal "
+                    f"({', '.join(found)}), já mascarado. Comece a resposta lembrando, com "
+                    "gentileza e em 1 frase, que não é preciso compartilhar dados pessoais "
+                    "aqui; não repita o dado. Depois responda normalmente.")
+            llm_request.append_instructions([note])
+
     async def after_model_callback(self, *, callback_context, llm_response):
         masked, ents = _redact_content(llm_response.content, PERSONAL_IDS)
         if masked is None:
             return None
         log.warning("PII mascarada na saída do modelo: %s", ents)
         return llm_response.model_copy(update={"content": masked})
+
+
+class ResponseContractPlugin(BasePlugin):
+    """Completa a resposta FINAL do Tutor com as frases obrigatórias que faltaram
+    (ver contract.py). Roda antes do PII e só muta a resposta no lugar, sem retornar,
+    para que o mascaramento da saída continue rodando depois."""
+
+    def __init__(self) -> None:
+        super().__init__(name="response_contract")
+
+    async def after_model_callback(self, *, callback_context, llm_response):
+        from . import contract
+
+        content = llm_response.content
+        if (llm_response.partial or not content or not content.parts
+                or any(p.function_call for p in content.parts)
+                or not any(p.text and not p.thought for p in content.parts)):
+            return  # chamada de tool ou pedaço de streaming: só a resposta final
+        events = callback_context.session.events
+        last_user = next((e.id for e in reversed(events) if e.author == "user"), None)
+        prefix, suffix = contract.missing_parts(
+            contract._text(content), callback_context.state, callback_context.user_content,
+            last_user)
+        if prefix or suffix:
+            log.info("contrato de resposta completou: prefixo=%s sufixo=%s",
+                     bool(prefix), bool(suffix))
+            contract.apply(content, prefix, suffix)
+        return
 
 
 class ToolCallBudgetPlugin(BasePlugin):
@@ -96,4 +149,5 @@ class ToolCallBudgetPlugin(BasePlugin):
 
 
 def default_plugins() -> list[BasePlugin]:
-    return [PiiRedactionPlugin(), ToolCallBudgetPlugin()]
+    # ordem importa: o contrato completa a resposta e o PII mascara o resultado final
+    return [ResponseContractPlugin(), PiiRedactionPlugin(), ToolCallBudgetPlugin()]

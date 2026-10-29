@@ -79,20 +79,32 @@ async def ask_stream(runner: Runner, user_id: str, session_id: str, text: str) -
     mais avisos curtos quando o agente chama uma tool."""
     msg = types.Content(role="user", parts=[types.Part(text=text)])
     run_config = RunConfig(streaming_mode=StreamingMode.SSE, max_llm_calls=MAX_LLM_CALLS)
+    streamed = ""
     try:
         async for event in runner.run_async(
             user_id=user_id, session_id=session_id, new_message=msg, run_config=run_config
         ):
             if not (event.content and event.content.parts):
                 continue
+            text_parts = [p.text for p in event.content.parts if p.text and not p.thought]
             for part in event.content.parts:
                 if part.function_call and not event.partial:
                     label = _TOOL_LABELS.get(part.function_call.name, part.function_call.name)
                     yield f"\n  [{label}...]\n"
+                    streamed = ""
                 # No modo SSE os pedaços chegam com partial=True e no fim vem um evento
-                # agregado com o texto inteiro, que não reimprimimos.
+                # agregado com o texto inteiro.
                 elif part.text and event.partial and not part.thought:
+                    streamed += part.text
                     yield part.text
+            if not event.partial and text_parts:
+                # o evento final pode trazer o que o contrato de resposta acrescentou
+                final = "".join(text_parts)
+                if final.startswith(streamed) and len(final) > len(streamed):
+                    yield final[len(streamed):]
+                elif not streamed:
+                    yield final
+                streamed = ""
     except LlmCallsLimitExceededError:
         yield ("\nNão consegui concluir esta resposta. Pode repetir a mensagem com outras "
                "palavras? Se continuar, fale com o seu buddy.")

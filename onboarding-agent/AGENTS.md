@@ -17,8 +17,9 @@ Sistema multiagente de onboarding com Google ADK (Python 3.11):
 - Toda tool nova precisa de teste em `tests/` usando o `FakeToolContext` (sem chamar LLM).
 - Prompts ficam em `agents/prompts.py`, em pt-BR.
 - Missão (`data/missions/*.yaml`, `tools/missions.py`): só o código avança checkpoint e conclui.
-  `expected`, `pattern` e `block_on` nunca vão ao modelo; `answer_mission` lê a mensagem do
-  colaborador. CPF de teste só da massa em `data/homolog_data.yaml`. Rode `make check` ao mexer.
+  `expected`, `pattern` e `block_on` nunca vão ao modelo. Cada mensagem é conferida por
+  `auto_check` antes do modelo (avanço, bloqueio, divergência, conclusão); `answer_mission`
+  só registra tentativa que não confere. CPF de teste só da massa em `data/homolog_data.yaml`. Rode `make check` ao mexer.
 - O Tutor não chama o Curador (Curador é TO-BE/offline): material só vem do catálogo.
 - Nota de quiz NUNCA vem do modelo: só `answer_quiz` grava, via `record_completion` (não exposto).
   Perguntas e gabarito vêm do banco aprovado do material; nunca devolva `correct_option` ao modelo.
@@ -32,6 +33,9 @@ Sistema multiagente de onboarding com Google ADK (Python 3.11):
 - Encaminhamento ao buddy: `propose_escalation` prepara, `confirm_escalation` lê o "sim" da
   mensagem do colaborador. O modelo nunca registra pedido sem essa resposta.
 - Material e quiz: só versão aprovada (`approved_only=True`).
+- Frase obrigatória na resposta não fica só no prompt: entra no contrato de resposta
+  (`contract.py` + `ResponseContractPlugin`), que completa a resposta final por código.
+  Antes de mudar prompt, rode `make eval-stable` e confira `make eval-history`.
 
 ## Comandos
 - `make setup` · `make test` · `make check` · `make web` · `make chat USER_ID=fulano`

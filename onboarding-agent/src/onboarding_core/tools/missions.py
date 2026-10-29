@@ -91,6 +91,7 @@ def mission_view(m: Mission, p: dict) -> dict:
         "guidance": step.guidance.format(**m.params),
         "checkpoint": cp.id,
         "tutor_instruction": cp.tutor_instruction,
+        "ask": cp.ask,
         "explain": [{"cite": f"[{s}]", "text": kb.section(s)} for s in cp.explain],
         "helpers": step.helpers,
         "test_cpf": p["evidence"].get("test_cpf"),
@@ -186,9 +187,32 @@ def _fail(tool_context, missions, p, m, cp, status: str, **extra) -> dict:
 
 
 def answer_mission(tool_context: ToolContext) -> dict:
-    """Valida a resposta do colaborador ao checkpoint atual da missão. Não recebe
-    argumentos: lê a última mensagem dele. Chame só quando ele responder ao que
-    você pediu no checkpoint (dúvidas vão para search_knowledge_base)."""
+    """Registra como TENTATIVA a última mensagem do colaborador no checkpoint atual. Não
+    recebe argumentos. Avanço e bloqueio o sistema já confere sozinho (ver
+    `mission_check` no contexto); chame só se `mission_check` for nulo e a mensagem for
+    uma resposta ao checkpoint que não confere (dúvidas vão para search_knowledge_base)."""
+    return _evaluate(tool_context, count_failure=True)
+
+
+def auto_check(ctx) -> dict | None:
+    """Conferência automática da mensagem do colaborador, ANTES de o modelo responder.
+
+    O código não depende de o modelo lembrar de chamar answer_mission (os evals
+    mostraram ele pulando a tool). Avanço, bloqueio, divergência e conclusão são
+    decididos aqui. Mensagem que não comprova nada fica sem efeito: não conta
+    tentativa (pode ser só uma dúvida); o modelo decide se registra com answer_mission.
+    """
+    state = ctx.state
+    mid = state.get(K.ACTIVE_MISSION)
+    p = (state.get(K.MISSIONS) or {}).get(mid or "")
+    if not p or p.get("status") != "in_progress":
+        return None
+    r = _evaluate(ctx, count_failure=False)
+    return r if r.get("status") in {"advanced", "blocked_access", "mismatch",
+                                    "mission_done"} else None
+
+
+def _evaluate(tool_context, count_failure: bool) -> dict:
     state = tool_context.state
     mid = state.get(K.ACTIVE_MISSION)
     m = get_mission(mid) if mid else None
@@ -219,8 +243,10 @@ def answer_mission(tool_context: ToolContext) -> dict:
             p["blocked"] = {"checkpoint": later.id, "at": _now()}
             _save(tool_context, missions)
             return {"ok": True, "status": "blocked_access",
-                    "next_step": "oriente pedir o acesso pelo buddy/canal do papel; a missão "
-                    "retoma deste mesmo checkpoint"}
+                    "tell": "A missão fica pausada neste ponto e continua daqui quando o "
+                    "acesso for liberado.",
+                    "next_step": "diga o texto de `tell` e oriente pedir o acesso; se o "
+                    "colaborador quiser ajuda do buddy, use propose_escalation"}
 
     # o colaborador pode estar à frente: vale o checkpoint mais adiante que a mensagem
     # comprova, sem atravessar etapa e sem pular um `capture` (evidência obrigatória)
@@ -230,6 +256,8 @@ def answer_mission(tool_context: ToolContext) -> dict:
         if ok:
             hit, value = j, v
     if hit is None:
+        if not count_failure:
+            return {"ok": True, "status": "no_match"}  # nada salvo: evento segue livre
         return _fail(tool_context, missions, p, m, cp, "not_confirmed")
 
     # o checkpoint atual já teve a explicação dada; os seguintes, até o comprovado, não
@@ -263,6 +291,21 @@ def answer_mission(tool_context: ToolContext) -> dict:
                 + nxt["tutor_instruction"])
         return {"ok": True, "status": "advanced", **extra, "next": nxt}
     return _finish(tool_context, missions, p, m)
+
+
+def unevaluated_block(state: Mapping[str, Any], event_id: str | None, text: str) -> bool:
+    """A mensagem atual relata um bloqueio da missão em andamento que answer_mission
+    ainda não avaliou? Usado para impor a ordem: missão primeiro, buddy depois."""
+    mid = state.get(K.ACTIVE_MISSION)
+    m = get_mission(mid) if mid else None
+    p = (state.get(K.MISSIONS) or {}).get(mid or "")
+    if m is None or not p or p.get("status") != "in_progress":
+        return False
+    if event_id in p.get("answered_event_ids", []):
+        return False
+    step = m.steps[p["step"]]
+    return any(step.checkpoints[j].block_on and _has(step.checkpoints[j].block_on, text)
+               for j in _reachable(step, p["checkpoint"]))
 
 
 def _reachable(step, start: int) -> list[int]:

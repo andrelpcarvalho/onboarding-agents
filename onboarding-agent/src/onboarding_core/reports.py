@@ -10,7 +10,7 @@ from google.adk.sessions.sqlite_session_service import SqliteSessionService
 from .config import APP_NAME, SESSIONS_DB
 from .schemas import Escalation
 from .tools import state_keys as K
-from .tools.progress import progress_snapshot
+from .tools.progress import progress_snapshot, sync_role
 
 
 @dataclass
@@ -37,11 +37,18 @@ async def tutee_status(user_id: str) -> TuteeStatus:
     svc = SqliteSessionService(db_path=str(SESSIONS_DB))
     resp = await svc.list_sessions(app_name=APP_NAME, user_id=user_id)
     if not resp.sessions:
-        return TuteeStatus(user_id, None, "-", None, [], None, None)
+        state: dict = {}
+        sync_role(state, user_id)
+        snap = progress_snapshot(state)
+        return TuteeStatus(user_id, snap.get("role"), snap.get("completed", "-"),
+                           snap.get("next_module"), [], None, None)
     latest = max(resp.sessions, key=lambda s: s.last_update_time)
     # get_session mescla o estado `user:*` (progresso) no estado da sessão
     session = await svc.get_session(app_name=APP_NAME, user_id=user_id, session_id=latest.id)
-    state = session.state if session else {}
+    state = dict(session.state) if session else {}
+    # papel = atribuição atual do responsável, mesmo que o tutorado ainda não tenha
+    # conversado desde a mudança (o estado da sessão só sincroniza na próxima mensagem)
+    sync_role(state, user_id)
     snap = progress_snapshot(state)
     quiz = snap.get("quiz_in_progress")
     missions = {

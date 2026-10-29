@@ -20,6 +20,7 @@ steps:
     checkpoints:
       - id: tela_inicial_site
         kind: describe
+        ask: "Você conseguiu acessar? Descreva brevemente a tela que apareceu."
         tutor_instruction: >
           Peça para o colaborador acessar o simulador e descrever brevemente a tela apresentada.
         expected: [simulacao, simulador, simular]
@@ -31,6 +32,7 @@ steps:
     checkpoints:
       - id: pre_analise
         kind: describe
+        ask: "Avise quando chegar à próxima tela."
         explain: ["site_solar_acom.md#Pré-análise"]
         tutor_instruction: >
           Explique resumidamente a pré-análise e peça para o colaborador avisar quando
@@ -38,6 +40,7 @@ steps:
         expected: [simulacao]
       - id: simulacao
         kind: describe
+        ask: "Avise quando chegar à próxima tela."
         explain: ["site_solar_acom.md#Simulação"]
         tutor_instruction: >
           Explique resumidamente a simulação e peça para o colaborador avisar quando
@@ -45,6 +48,7 @@ steps:
         expected: [proponente, dados da proposta]
       - id: dados_proposta
         kind: capture
+        ask: "Qual é o número da proposta exibido na confirmação?"
         explain: ["site_solar_acom.md#Dados da proposta"]
         tutor_instruction: >
           Explique resumidamente os dados da proposta e avise que a proposta é persistida
@@ -58,16 +62,19 @@ steps:
     checkpoints:
       - id: entendeu_acom
         kind: confirm
+        ask: "Ficou claro o que é o ACOM? Podemos seguir?"
         explain: ["site_solar_acom.md#O que é o ACOM"]
         tutor_instruction: >
           Explique resumidamente o que é o ACOM e peça para o colaborador confirmar se
           entendeu e se pode seguir.
       - id: tela_inicial_acom
         kind: describe
+        ask: "Descreva a tela inicial do ACOM."
         tutor_instruction: Peça para o colaborador descrever a tela inicial do ACOM antes de seguir.
         expected: [consulta, consultar]
       - id: acesso_operador
         kind: describe
+        ask: "Qual perfil aparece logado no ACOM?"
         explain: ["site_solar_acom.md#Perfis do ACOM"]
         tutor_instruction: >
           Faça uma verificação guiada do perfil: peça para o colaborador dizer qual perfil
@@ -77,6 +84,7 @@ steps:
                    nao tenho perfil, perfil nao aparece, sem o perfil, nao consigo acessar]
       - id: proposta_acom
         kind: capture
+        ask: "Qual é o número da proposta que você encontrou no ACOM?"
         tutor_instruction: >
           Guie a consulta da proposta pelo CPF usado na origem e peça o número da proposta
           encontrada no ACOM.

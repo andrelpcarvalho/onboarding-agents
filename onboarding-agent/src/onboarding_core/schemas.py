@@ -42,6 +42,9 @@ class Checkpoint(BaseModel):
     id: str
     kind: CheckpointKind
     tutor_instruction: str
+    # pergunta ao colaborador que fecha a mensagem do Tutor neste checkpoint; o contrato
+    # de resposta garante que ela apareça (ver contract.py)
+    ask: str | None = None
     explain: list[str] = Field(default_factory=list)  # fontes arquivo.md#Seção
     expected: list[str] = Field(default_factory=list)  # describe: palavras-chave
     block_on: list[str] = Field(default_factory=list)  # termos que bloqueiam a missão

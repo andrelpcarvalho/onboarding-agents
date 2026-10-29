@@ -12,6 +12,7 @@ from ..schemas import QuizQuestion
 from ..storage import get_catalog
 
 LETTERS = "ABCD"
+ASK = "Responda só com a letra: A, B, C ou D."
 
 
 def quiz_question(quiz: dict[str, Any], position: int | None = None) -> QuizQuestion | None:
@@ -31,6 +32,7 @@ def question_view(quiz: dict[str, Any]) -> dict[str, Any]:
         "total": len(quiz["picks"]),
         "question": q.question,
         "options": {LETTERS[i]: opt for i, opt in enumerate(q.options)},
+        "ask": ASK,  # fecho literal: o eval mostrou o modelo trocando por "Qual a sua resposta?"
     }
 
 

@@ -291,3 +291,47 @@ def test_negativa_sem_relato_de_falha_ainda_avanca(ctx):
     answer_mission(ctx)
     ctx.say("estou na tela de simulação, não deu nenhum erro")
     assert answer_mission(ctx)["status"] == "advanced"
+
+
+# ---- conferência automática antes do modelo (evals de 28/10: o modelo pulava a tool) ----
+
+def test_auto_check_avanca_sem_o_modelo_chamar_tool(ctx):
+    from onboarding_core.tools.missions import auto_check
+
+    assert _iniciar(ctx)["ok"]
+    ctx.say("Apareceu a tela inicial com a opção de iniciar uma simulação")
+    r = auto_check(ctx)
+    assert r["status"] == "advanced" and r["next"]["checkpoint"] == "pre_analise"
+    assert answer_mission(ctx)["status"] == "already_evaluated"  # modelo não duplica
+
+
+def test_auto_check_registra_bloqueio_sozinho(ctx):
+    from onboarding_core.tools.missions import auto_check
+
+    _ate_perfil(ctx)
+    ctx.say("Não tenho acesso de operador no ACOM")
+    r = auto_check(ctx)
+    assert r["status"] == "blocked_access" and "continua daqui" in r["tell"]
+    assert ctx.state[K.MISSIONS][MISSAO]["status"] == "blocked_access"
+
+
+def test_auto_check_sem_comprovacao_nao_conta_tentativa(ctx):
+    from onboarding_core.tools.missions import auto_check
+
+    assert _iniciar(ctx)["ok"]
+    ctx.say("o que é homologação?")
+    assert auto_check(ctx) is None
+    assert ctx.state[K.MISSIONS][MISSAO]["attempts"] == {}
+    r = answer_mission(ctx)  # se era resposta, o modelo ainda pode registrar a tentativa
+    assert r["status"] == "not_confirmed" and r["attempts"] == 1
+
+
+def test_auto_check_sem_missao_ou_pausada(ctx):
+    from onboarding_core.tools.missions import auto_check
+
+    assert auto_check(ctx) is None
+    _ate_perfil(ctx)
+    ctx.say("não tenho acesso de operador")
+    auto_check(ctx)
+    ctx.say("e agora?")
+    assert auto_check(ctx) is None

@@ -23,6 +23,7 @@ from ..pii import redact_text
 from ..roles import get_role
 from ..storage import get_catalog
 from . import state_keys as K
+from .missions import unevaluated_block
 from .progress import buddy_info
 from .quiz import _last_user_message
 
@@ -68,17 +69,36 @@ def propose_escalation(
     if _limit_reached(user_id):
         return {"ok": False, "error": "limite diário de encaminhamentos atingido; "
                 "oriente o colaborador a procurar o buddy diretamente"}
-    event_id, _ = _last_user_message(tool_context)
+    event_id, text = _last_user_message(tool_context)
+    if unevaluated_block(tool_context.state, event_id, text):
+        # ordem imposta por código: o bloqueio precisa ficar registrado na missão antes
+        # (o eval mostrou o modelo indo direto para o buddy e a missão sem registro)
+        return {"ok": False, "error": "esta mensagem relata um bloqueio da missão em andamento",
+                "next_step": "chame answer_mission AGORA; depois, se o colaborador quiser "
+                "ajuda do buddy, chame propose_escalation de novo"}
     pending = {"category": category, "urgency": urgency,
                "summary": redact_text(summary.strip())[:500],
                "proposed_after_event": event_id,
                "at": datetime.now(UTC).isoformat(timespec="seconds")}
-    tool_context.state[K.PENDING_ESCALATION] = pending
     role_id = tool_context.state.get(K.ROLE_ID)
+    buddy = buddy_info(user_id, get_role(role_id) if role_id else None)
+    pending["ask"] = consent_question(buddy)  # o contrato de resposta garante a pergunta
+    tool_context.state[K.PENDING_ESCALATION] = pending
     return {"ok": True, "status": "awaiting_consent", "summary": pending["summary"],
-            "buddy": buddy_info(user_id, get_role(role_id) if role_id else None),
-            "next_step": "pergunte se o colaborador quer que este pedido seja registrado para "
-            "o buddy e PARE; na próxima mensagem dele, chame confirm_escalation"}
+            "buddy": buddy, "ask": consent_question(buddy),
+            "next_step": "termine a mensagem com o texto de `ask`, exatamente como veio, e "
+            "PARE; na próxima mensagem do colaborador, chame confirm_escalation"}
+
+
+def consent_question(buddy: dict) -> str:
+    """Pergunta de consentimento pronta, com nome E contato (o eval mostrou o modelo
+    omitindo o contato quando montava a frase sozinho)."""
+    if buddy.get("assigned"):
+        return (f"Quem pode te ajudar é {buddy['name']} ({buddy['contact']}). Quer que eu "
+                f"registre um pedido para {buddy['name']}? Responda sim ou não.")
+    contact = buddy.get("contact") or "o responsável do onboarding"
+    return (f"O canal de apoio do seu papel é {contact}. Quer que eu registre um pedido "
+            "para o responsável do onboarding? Responda sim ou não.")
 
 
 def confirm_escalation(tool_context: ToolContext) -> dict:
