@@ -25,7 +25,16 @@ def search_knowledge_base(question: str, tool_context: ToolContext) -> dict:
     Args:
         question: a dúvida do colaborador, em linguagem natural.
     """
-    results = kb.search(question)
+    try:
+        results = kb.search(question)
+    except Exception as e:
+        from ..kb_vector import VectorSearchUnavailable
+
+        if not isinstance(e, VectorSearchUnavailable):
+            raise
+        return {"found": False, "error": "busca indisponível no momento",
+                "instruction": "diga que a busca na base está fora do ar agora, NÃO invente e "
+                "NÃO diga que a dúvida foi registrada; sugira tentar de novo em instantes"}
     if results:
         return {"found": True,
                 "results": [{**r, "cite": f"[{r['source']}]"} for r in results]}

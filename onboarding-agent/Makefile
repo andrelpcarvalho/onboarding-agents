@@ -2,7 +2,7 @@ PY := .venv/bin/python
 ADK := .venv/bin/adk
 SERVICES := --session_service_uri sqlite:///.adk/sessions.db --memory_service_uri sqlite:///.adk/memory.db
 
-.PHONY: setup test lint web chat curate approve gaps backup check new-role inbox buddy eval eval-stable eval-trajectory eval-behavior eval-report eval-history demo-setup demo-chat demo-web demo-missao
+.PHONY: setup test lint web chat curate approve gaps backup check new-role inbox buddy eval eval-stable eval-trajectory eval-behavior eval-report eval-history demo-setup demo-chat demo-web demo-missao kb-mcp kb-index
 
 setup:
 	python3.11 -m venv .venv
@@ -99,3 +99,13 @@ demo-web:
 # plano B: comportamento da missão sem chamar o modelo
 demo-missao:
 	$(PY) scripts/demo_missao.py --tropecos
+
+# ---- base via MCP e busca vetorial (item 8; requer: pip install -e ".[mcp]")
+TRANSPORT ?= stdio
+PORT ?= 8876
+kb-mcp:
+	$(PY) -m onboarding_core.mcp_kb --transport $(TRANSPORT) --port $(PORT)
+
+# pré-calcula os embeddings da base (ONBOARDING_KB_BACKEND=vector usa este índice)
+kb-index:
+	$(PY) -c "from onboarding_core import kb_vector as v; print(len(v.build_index()), 'trechos indexados em', v.INDEX)"
