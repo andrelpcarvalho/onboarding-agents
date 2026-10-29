@@ -10,6 +10,12 @@ Uso:
     python scripts/approve.py gaps                       # lacunas abertas do Tutor
     python scripts/approve.py resolve-gap 7              # marca lacuna como resolvida
     python scripts/approve.py stale pipeline_deploy.md   # tira de uso materiais que citam a fonte
+
+Missões (data/missions/*.yaml; a aprovação grava status no YAML e entra por PR):
+    python scripts/approve.py missions                   # lista missões e status
+    python scripts/approve.py mission-show site_solar_proposta_acom
+    python scripts/approve.py mission-approve site_solar_proposta_acom --by maria
+    python scripts/approve.py mission-draft site_solar_proposta_acom --by maria --reason "falta o passo do ACOM"
 """
 
 from __future__ import annotations
@@ -24,6 +30,7 @@ from pathlib import Path
 
 import yaml
 
+from onboarding_core import mission_review as mr
 from onboarding_core.kb import valid_sources
 from onboarding_core.quiz_bank import QUIZ_SIZE, parse_bank, validate_bank
 from onboarding_core.schemas import Material
@@ -167,6 +174,34 @@ def cmd_gaps(cat, args) -> None:
         print(f"#{g.id:<4} [{g.role_id}/{g.module_id}] {g.question}")
 
 
+def cmd_missions(args) -> None:
+    if args.cmd == "missions":
+        for mf in mr.list_missions():
+            if mf.mission is None:
+                print(f"{mf.path.stem:<32} INVÁLIDA   {mf.error}")
+                continue
+            m = mf.mission
+            label = "APROVADA" if m.status == "approved" else "rascunho"
+            pend = mr.problems(m)
+            extra = f"   {len(pend)} pendência(s): mission-show {m.id}" if pend else ""
+            print(f"{m.id:<32} {label:<10} por {m.approved_by or '-'}{extra}")
+    elif args.cmd == "mission-show":
+        mf = mr.find(args.id)
+        if mf.mission is None:
+            sys.exit(f"YAML inválido: {mf.error}")
+        print(mr.describe(mf.mission))
+        for e in mr.problems(mf.mission):
+            print(f"  PENDÊNCIA: {e}")
+    else:
+        status = "approved" if args.cmd == "mission-approve" else "draft"
+        try:
+            path = mr.set_status(args.id, status, args.by, getattr(args, "reason", None))
+        except (KeyError, ValueError) as e:
+            sys.exit(str(e).strip("'\""))
+        verb = "aprovada" if status == "approved" else "devolvida para rascunho"
+        print(f"missão {args.id} {verb} por {args.by}. Commit e PR de {path.relative_to(Path.cwd())}")
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -192,7 +227,21 @@ def main() -> None:
     sub.add_parser("gaps", help="lacunas abertas").add_argument("--role")
     sub.add_parser("resolve-gap", help="fecha uma lacuna").add_argument("id", type=int)
     sub.add_parser("stale", help="tira de uso o que cita uma fonte").add_argument("source")
+
+    sub.add_parser("missions", help="lista missões e status")
+    sub.add_parser("mission-show", help="roteiro e o que o código confere").add_argument("id")
+    sp = sub.add_parser("mission-approve", help="aprova uma missão (grava no YAML)")
+    sp.add_argument("id")
+    sp.add_argument("--by", required=True)
+    sp = sub.add_parser("mission-draft", help="devolve uma missão para rascunho")
+    sp.add_argument("id")
+    sp.add_argument("--by", required=True)
+    sp.add_argument("--reason", required=True)
     args = p.parse_args()
+
+    if args.cmd.startswith("mission"):
+        cmd_missions(args)
+        return
 
     cat = get_catalog()
     if args.cmd == "list":
