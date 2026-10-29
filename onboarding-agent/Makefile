@@ -8,7 +8,7 @@ setup:
 	python3.11 -m venv .venv
 	$(PY) -m pip install -U pip
 	$(PY) -m pip install -e ".[dev]"
-	$(PY) -m spacy download pt_core_news_sm
+	$(PY) -m pip install https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl
 	@test -f .env || cp .env.example .env
 
 test:
