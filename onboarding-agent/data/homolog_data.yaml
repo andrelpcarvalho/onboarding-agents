@@ -1,7 +1,12 @@
-# Massa de teste de HOMOLOGAÇÃO entregue pelo time dono do sistema.
-# Nunca coloque CPF real. Itens que não forem CPF válido são ignorados, então os
-# marcadores abaixo deixam `get_test_cpf` desligado até alguém preencher a massa oficial.
-# Estes CPFs também passam pelo mascaramento de PII sem virar <CPF>.
+# Massa de teste de HOMOLOGAÇÃO — SIMULADA para a PoC do curso.
+# Os CPFs abaixo foram GERADOS (dígitos verificadores válidos, números fictícios) por
+# `python scripts/gen_homolog_cpfs.py`. Nunca coloque CPF real aqui: estes valores são a
+# única exceção ao mascaramento de dados pessoais (ver README, riscos residuais).
+simulado: true
+gerado_por: scripts/gen_homolog_cpfs.py
 cpfs:
-  - "<CPF_HML_1>"
-  - "<CPF_HML_2>"
+  - "873.574.276-33"
+  - "144.263.824-91"
+  - "591.315.437-15"
+  - "633.881.124-44"
+  - "137.462.286-97"

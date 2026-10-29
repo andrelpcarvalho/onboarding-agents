@@ -1,7 +1,8 @@
 """Busca na base de conhecimento da empresa.
 
 Implementação local por palavras-chave sobre data/kb/*.md, suficiente para o
-MVP e para testes. Para produção, troque `search` por Vertex AI Search
+MVP e para testes. Só entram documentos publicados (front matter com
+`status: aprovado` e dentro da vigência; ver `kb_checklist.py`). Para produção, troque `search` por Vertex AI Search
 (google.adk.tools.VertexAiSearchTool) ou um vetor store (Chroma, AlloyDB),
 mantendo a mesma assinatura de retorno.
 """
@@ -11,7 +12,10 @@ from __future__ import annotations
 import re
 import unicodedata
 from dataclasses import dataclass
+from datetime import date
 from functools import lru_cache
+
+import yaml
 
 from .config import KB_DIR
 
@@ -45,14 +49,42 @@ def _tokens(s: str) -> set[str]:
     return {t for t in re.findall(r"[a-z0-9]+", _norm(s)) if len(t) > 2 and t not in _STOPWORDS}
 
 
+def split_front_matter(text: str) -> tuple[dict, str]:
+    """(metadados, corpo) de um documento. Sem front matter: ({}, texto inteiro)."""
+    if not text.startswith("---\n"):
+        return {}, text
+    end = text.find("\n---", 4)
+    if end < 0:
+        return {}, text
+    meta = yaml.safe_load(text[4:end]) or {}
+    return (meta if isinstance(meta, dict) else {}), text[end + 4:].lstrip("\n")
+
+
+def is_published(meta: dict, today: date | None = None) -> bool:
+    """Documento entra na busca? Sem metadados = legado, entra (o `make check` acusa).
+    Com metadados: só `status: aprovado` e dentro da vigência (RN-02, RN-03)."""
+    if not meta:
+        return True
+    if meta.get("status") != "aprovado":
+        return False
+    vig = meta.get("vigente_ate")
+    try:
+        return vig is None or date.fromisoformat(str(vig)) >= (today or date.today())
+    except ValueError:
+        return False
+
+
 @lru_cache
 def load_chunks() -> tuple[Chunk, ...]:
-    """Divide cada .md por seção (## ...). Cada seção vira um chunk citável."""
+    """Divide cada .md publicado por seção (## ...). Cada seção vira um chunk citável."""
     chunks: list[Chunk] = []
     for path in sorted(KB_DIR.glob("*.md")):
+        meta, body = split_front_matter(path.read_text(encoding="utf-8"))
+        if not is_published(meta):
+            continue
         source = path.name
         heading, buf = path.stem, []
-        for line in path.read_text(encoding="utf-8").splitlines():
+        for line in body.splitlines():
             if line.startswith("## "):
                 if buf:
                     chunks.append(Chunk(source, heading, "\n".join(buf).strip()))

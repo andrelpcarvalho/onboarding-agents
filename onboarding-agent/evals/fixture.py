@@ -15,6 +15,7 @@ from __future__ import annotations
 from build_evalsets import BUDDY, eval_role_assignments, eval_user_ids  # mesmo diretório
 
 from onboarding_core.config import CATALOG_DB, KB_DIR
+from onboarding_core.kb import split_front_matter
 from onboarding_core.quiz_bank import parse_bank
 from onboarding_core.storage import Catalog
 
@@ -43,7 +44,7 @@ def main() -> None:
         p.unlink()
     cat = Catalog(CATALOG_DB)
     for module_id, kb_file in MODULES.items():
-        text = (KB_DIR / kb_file).read_text(encoding="utf-8")
+        _, text = split_front_matter((KB_DIR / kb_file).read_text(encoding="utf-8"))
         sections = [ln[3:].strip() for ln in text.splitlines() if ln.startswith("## ")]
         m = cat.save_draft(ROLE, module_id, module_id.replace("_", " ").title(), text,
                            [f"{kb_file}#{s}" for s in sections], quiz=parse_bank(_bank(module_id)))
