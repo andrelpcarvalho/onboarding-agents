@@ -11,6 +11,7 @@ guia abaixo é escrito para uma dessas pessoas e cobre só o que ela precisa faz
 | 4 | [Buddy](4-buddy.md) | Colega que acompanha cada novo colaborador | Acompanha o progresso dos seus tutorados e atende os pedidos que o Tutor encaminha |
 | 5 | [Tutorado](5-tutorado.md) | Novo colaborador | Faz o onboarding conversando com o Tutor |
 | 6 | [Plano de teste funcional](6-guia-de-teste.md) | Quem valida o sistema | Roteiro estruturado para testar fluxos, operações, guardrails e evals, com evidências |
+| 7 | [Roteiro da demo](7-roteiro-demo.md) | Quem apresenta | Demo de 5 minutos com dados simulados (`make demo-setup`) e plano B sem modelo |
 
 ## Por onde começar
 

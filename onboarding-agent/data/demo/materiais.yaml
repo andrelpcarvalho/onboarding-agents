@@ -1,0 +1,240 @@
+# Materiais SIMULADOS para a demo da PoC (item 11 do plano).
+# Cada módulo aponta para as seções da base que viram o texto de estudo e traz um banco
+# de 4 a 6 perguntas fiel à base. `make demo-setup` grava tudo como APROVADO num catálogo
+# separado (.adk/demo/), sem tocar nos dados de uso normal.
+# correct_option: índice 0-3 da alternativa correta.
+modulos:
+  cultura_empresa:
+    titulo: Cultura e forma de trabalhar
+    fontes:
+    - cultura.md#Valores
+    - cultura.md#Rituais do time
+    - cultura.md#Comunicação
+    perguntas:
+    - question: Quais são os valores da empresa?
+      options:
+      - Foco no cliente, transparência e aprender rápido
+      - Agilidade, qualidade e inovação
+      - Meritocracia, eficiência e resultado
+      - Sustentabilidade, ética e diversidade
+      correct_option: 0
+      explanation: Os valores são foco no cliente, transparência e aprender rápido [cultura.md#Valores].
+    - question: Como as decisões técnicas devem ser registradas?
+      options:
+      - Por mensagem privada ao gestor
+      - Por escrito
+      - Apenas na daily
+      - Não precisam ser registradas
+      correct_option: 1
+      explanation: Decisões técnicas são registradas por escrito [cultura.md#Valores].
+    - question: Com que frequência acontecem a sprint review e a retrospectiva?
+      options:
+      - Toda semana
+      - Uma vez por mês
+      - A cada duas semanas, na sexta-feira
+      - Só no fim do trimestre
+      correct_option: 2
+      explanation: Review e retro acontecem a cada duas semanas, na sexta-feira [cultura.md#Rituais do
+        time].
+    - question: Qual o formato da retrospectiva?
+      options:
+      - Start, stop, continue
+      - Manter, melhorar, experimentar
+      - Bom, ruim, feio
+      - Livre, sem formato
+      correct_option: 1
+      explanation: A retro segue o formato manter, melhorar, experimentar [cultura.md#Rituais do time].
+    - question: Onde ficam as decisões importantes do time?
+      options:
+      - No canal pessoal do gestor
+      - Numa planilha compartilhada
+      - Numa página na wiki do time
+      - No e-mail do squad
+      correct_option: 2
+      explanation: Decisões importantes viram uma página na wiki do time [cultura.md#Comunicação].
+  acessos_ferramentas:
+    titulo: Acessos e ferramentas
+    fontes:
+    - acessos_ferramentas.md#Acessos do primeiro dia
+    - acessos_ferramentas.md#Ambiente local
+    - acessos_ferramentas.md#Ferramentas de gestão
+    perguntas:
+    - question: Por onde se pedem os acessos do primeiro dia?
+      options:
+      - Por mensagem ao buddy
+      - Por chamado no portal de serviços
+      - Por e-mail ao RH
+      - Pelo Jira do squad
+      correct_option: 1
+      explanation: Os acessos são pedidos por chamado no portal de serviços [acessos_ferramentas.md#Acessos
+        do primeiro dia].
+    - question: Quem aprova o chamado de acessos e qual o prazo médio?
+      options:
+      - O RH, em 5 dias úteis
+      - O time de segurança, em 2 dias
+      - O gestor, em 1 dia útil
+      - O buddy, no mesmo dia
+      correct_option: 2
+      explanation: O gestor aprova o chamado; o prazo médio é de 1 dia útil [acessos_ferramentas.md#Acessos
+        do primeiro dia].
+    - question: Qual comando autentica no sandbox de desenvolvimento?
+      options:
+      - sf org login web --alias dev
+      - sf deploy start
+      - git clone sandbox
+      - sf org create scratch
+      correct_option: 0
+      explanation: A autenticação é feita com sf org login web --alias dev [acessos_ferramentas.md#Ambiente
+        local].
+    - question: O que toda história precisa antes de entrar na sprint?
+      options:
+      - Estimativa em horas
+      - Aprovação do diretor
+      - Critérios de aceite
+      - Um protótipo
+      correct_option: 2
+      explanation: Cada história deve ter critérios de aceite antes de entrar na sprint [acessos_ferramentas.md#Ferramentas
+        de gestão].
+  seguranca_informacao:
+    titulo: Segurança da informação
+    fontes:
+    - seguranca.md#Dados de clientes e LGPD
+    - seguranca.md#Reporte de incidentes
+    perguntas:
+    - question: Dados pessoais de clientes podem ir para um sandbox?
+      options:
+      - Sim, sempre
+      - Só com mascaramento
+      - Só se o gestor autorizar por chat
+      - Só em sandbox de desenvolvimento
+      correct_option: 1
+      explanation: Dados pessoais nunca vão para sandboxes sem mascaramento [seguranca.md#Dados de clientes
+        e LGPD].
+    - question: Onde dados pessoais de clientes nunca podem ser compartilhados?
+      options:
+      - No sistema oficial do atendimento
+      - Em canais do Slack ou ferramentas de IA externas
+      - No CRM, com permissão
+      - Na base mascarada de testes
+      correct_option: 1
+      explanation: Dados pessoais não podem ir para canais do Slack nem ferramentas de IA externas [seguranca.md#Dados
+        de clientes e LGPD].
+    - question: O que fazer ao suspeitar de um phishing?
+      options:
+      - Investigar sozinho antes de avisar
+      - Esperar a próxima daily
+      - 'Reportar imediatamente no #seguranca ou ao time de segurança'
+      - Apagar o e-mail e seguir
+      correct_option: 2
+      explanation: Suspeitas de incidente são reportadas imediatamente, sem investigar sozinho [seguranca.md#Reporte
+        de incidentes].
+    - question: Quais situações devem ser reportadas como incidente?
+      options:
+      - Só vazamento confirmado
+      - Phishing, vazamento ou acesso indevido, mesmo só suspeita
+      - Só acesso indevido em produção
+      - Só o que o gestor classificar
+      correct_option: 1
+      explanation: Qualquer suspeita de phishing, vazamento ou acesso indevido deve ser reportada [seguranca.md#Reporte
+        de incidentes].
+  pipeline_deploy:
+    titulo: Pipeline de deploy Salesforce
+    fontes:
+    - pipeline_deploy.md#Modelo de release branch
+    - pipeline_deploy.md#Deploy em UAT
+    - pipeline_deploy.md#GMUD
+    - pipeline_deploy.md#Deploy em produção e rollback
+    perguntas:
+    - question: De onde sai a branch release/* ao fim da sprint?
+      options:
+      - Da main
+      - Da última feature
+      - Da branch de produção
+      - De uma tag antiga
+      correct_option: 0
+      explanation: A release/* é criada a partir da main [pipeline_deploy.md#Modelo de release branch].
+    - question: O que dispara o deploy automático em UAT?
+      options:
+      - A aprovação da GMUD
+      - O merge na release
+      - A abertura do PR
+      - Um comando manual do analista
+      correct_option: 1
+      explanation: O merge na release dispara o deploy em UAT [pipeline_deploy.md#Deploy em UAT].
+    - question: O que bloqueia o deploy em produção enquanto a GMUD não é aprovada?
+      options:
+      - O ci-validate
+      - O workflow gmud-gate
+      - O rollback-prd
+      - O analista de negócios
+      correct_option: 1
+      explanation: O gmud-gate bloqueia o deploy em PRD sem GMUD aprovada [pipeline_deploy.md#GMUD].
+    - question: O que o rollback-prd faz?
+      options:
+      - Apaga a release atual
+      - Reabre a GMUD
+      - Reimplanta a última release estável
+      - Volta o UAT
+      correct_option: 2
+      explanation: O rollback-prd reimplanta a última release estável [pipeline_deploy.md#Deploy em produção
+        e rollback].
+    - question: O que acontece com as branches abertas depois do deploy em produção?
+      options:
+      - São apagadas
+      - Recebem aviso para fazer rebase
+      - São mergeadas na main
+      - Nada
+      correct_option: 1
+      explanation: Branches abertas recebem aviso para fazer rebase [pipeline_deploy.md#Deploy em produção
+        e rollback].
+  homologacao_gmud:
+    titulo: Homologação e GMUD
+    fontes:
+    - pipeline_deploy.md#Deploy em UAT
+    - pipeline_deploy.md#GMUD
+    perguntas:
+    - question: Em que ambiente acontece a homologação com a área de negócio?
+      options:
+      - Produção
+      - UAT
+      - Sandbox de desenvolvimento
+      - Scratch org
+      correct_option: 1
+      explanation: A homologação acontece em UAT [pipeline_deploy.md#Deploy em UAT].
+    - question: Quem conduz a homologação com a área de negócio?
+      options:
+      - O desenvolvedor
+      - O gestor
+      - O analista de negócios
+      - O time de segurança
+      correct_option: 2
+      explanation: A homologação é conduzida pelo analista de negócios [pipeline_deploy.md#Deploy em UAT].
+    - question: Quando a GMUD é exigida?
+      options:
+      - Só em mudanças grandes
+      - Em toda ida para produção
+      - Só quando há rollback
+      - Só em UAT
+      correct_option: 1
+      explanation: Toda ida para produção exige GMUD aprovada [pipeline_deploy.md#GMUD].
+    - question: Qual a responsabilidade do analista na GMUD?
+      options:
+      - Aprovar a GMUD
+      - Anexar a evidência de homologação
+      - Fazer o deploy
+      - Escrever os testes Apex
+      correct_option: 1
+      explanation: O analista anexa a evidência de homologação na GMUD [pipeline_deploy.md#GMUD].
+usuarios_demo:
+- user_id: demo.ana
+  papel: dev_salesforce
+  buddy:
+    id: demo.bia
+    nome: Bia Buddy
+    contato: '@bia.buddy no Slack'
+- user_id: demo.bruno
+  papel: analista_negocios
+  buddy:
+    id: demo.bia
+    nome: Bia Buddy
+    contato: '@bia.buddy no Slack'
