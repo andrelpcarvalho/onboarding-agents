@@ -9,6 +9,7 @@ mantendo a mesma assinatura de retorno.
 
 from __future__ import annotations
 
+import os
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -96,7 +97,21 @@ def load_chunks() -> tuple[Chunk, ...]:
     return tuple(c for c in chunks if c.text)
 
 
+def backend() -> str:
+    """`keyword` (padrão) ou `vector` (ver kb_vector.py). Escolha explícita, sem troca automática."""
+    return os.getenv("ONBOARDING_KB_BACKEND", "keyword").strip().lower()
+
+
 def search(query: str, top_k: int = 4) -> list[dict]:
+    """Trechos citáveis para a pergunta, pelo backend configurado."""
+    if backend() == "vector":
+        from . import kb_vector
+
+        return kb_vector.search(query, top_k)
+    return keyword_search(query, top_k)
+
+
+def keyword_search(query: str, top_k: int = 4) -> list[dict]:
     q = _tokens(query)
     if not q:
         return []

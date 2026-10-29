@@ -80,7 +80,7 @@ def check_role(path, errors: list[str], warnings: list[str], seen_ids: set[str])
             errors.append(f"{where}: sem objetivos (o quiz é baseado neles)")
         if not m.kb_tags:
             errors.append(f"{where}: sem kb_tags (o Curador não sabe o que buscar)")
-        elif not kb.search(" ".join(m.kb_tags)):
+        elif not kb.keyword_search(" ".join(m.kb_tags)):
             errors.append(f"{where}: kb_tags {m.kb_tags} não encontram nada em data/kb/")
         else:
             missing = [t for t in m.kb_tags if not kb.has_term(t)]

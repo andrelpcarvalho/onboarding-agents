@@ -25,7 +25,9 @@ dependencies = [
 [project.optional-dependencies]
 # Habilita LiteLlm (Claude, OpenAI, etc.) via MODEL=provider/model no .env
 litellm = ["google-adk[extensions]==2.13.0"]
-dev = ["pytest==9.2.0", "pytest-asyncio==1.4.1", "ruff==0.17.3", "google-adk[eval]==2.13.0"]
+# Servidor MCP da base (make kb-mcp). A busca vetorial usa só o google-genai, já instalado.
+mcp = ["mcp==2.3.0"]
+dev = ["pytest==9.2.0", "pytest-asyncio==1.4.1", "ruff==0.17.3", "google-adk[eval]==2.13.0", "mcp==2.3.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -158,6 +158,18 @@ documentos da sua empresa ([guia do autor](docs/2-autor-de-conteudo.md)).
 
 ---
 
+### Base via MCP e busca vetorial (opcional)
+
+```bash
+pip install -e ".[mcp]"                                   # uma vez
+make kb-mcp                                               # servidor MCP da base (stdio)
+make kb-mcp TRANSPORT=streamable-http PORT=8876           # http://127.0.0.1:8876/mcp
+ONBOARDING_KB_BACKEND=vector make kb-index                # embeddings da base em .adk/
+```
+
+O servidor expõe `buscar_trechos`, `listar_fontes` e `status_base` sobre a mesma busca do Tutor.
+O Tutor segue chamando a busca em processo para registrar a lacuna por código (RN-17).
+
 ### Demo com dados simulados
 
 ```bash
@@ -245,8 +257,9 @@ Rode antes de mudar prompt, modelo, ferramenta ou `.env`. Os casos ficam em
 - **Sem autenticação:** o `userId` é declarado pela própria pessoa. Use só em piloto interno.
 - **Interface de teste:** o acesso é pelo terminal ou pela UI de desenvolvimento do ADK.
 - **Sem notificações:** buddy, revisor e autor consultam as suas filas por comando.
-- **Busca por palavra-chave:** na base e na memória. Perguntas com palavras diferentes das do
-  documento podem não encontrar a resposta e virar lacuna.
+- **Busca por palavra-chave por padrão:** perguntas com palavras diferentes das do documento podem
+  virar lacuna. A busca vetorial (`ONBOARDING_KB_BACKEND=vector`, embeddings Gemini) é opcional e
+  ainda não passou pelo `make eval-stable`; a memória segue por palavra-chave.
 - **Uma instância só:** o SQLite pede um único processo com disco persistente.
 - **Prompt injection** protegido só por instrução no prompt.
 - **CPFs de homologação sem máscara:** os CPFs de `data/homolog_data.yaml` são a única exceção ao
