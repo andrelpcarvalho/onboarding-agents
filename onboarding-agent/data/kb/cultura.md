@@ -1,4 +1,18 @@
-# Cultura (EXEMPLO — substitua pelo conteúdo real da empresa)
+---
+titulo: Cultura e forma de trabalhar
+slug: cultura
+area_dona: Pessoas e Cultura
+responsavel: cultura.onboarding
+versao: 1.0
+vigente_ate: 2027-06-30
+tipo: referencia
+status: aprovado
+simulado: true
+papeis: [dev_salesforce, analista_negocios]
+sistemas: []
+---
+
+# Cultura e forma de trabalhar (SIMULAÇÃO — conteúdo fictício para a PoC do curso)
 
 ## Valores
 Nossos valores são: foco no cliente, transparência e aprender rápido. Na prática,

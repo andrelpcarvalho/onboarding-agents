@@ -1,4 +1,18 @@
-# Pipeline de deploy Salesforce (EXEMPLO)
+---
+titulo: Pipeline de deploy Salesforce
+slug: pipeline_deploy
+area_dona: CoE Salesforce
+responsavel: coe.salesforce
+versao: 1.0
+vigente_ate: 2027-06-30
+tipo: referencia
+status: aprovado
+simulado: true
+papeis: [dev_salesforce, analista_negocios]
+sistemas: [GitHub Actions, Salesforce]
+---
+
+# Pipeline de deploy Salesforce (SIMULAÇÃO — conteúdo fictício para a PoC do curso)
 
 ## Modelo de release branch
 O desenvolvimento acontece em branches feature/*. Ao fim da sprint é criada uma

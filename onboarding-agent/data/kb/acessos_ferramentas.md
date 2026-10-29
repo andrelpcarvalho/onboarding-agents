@@ -1,4 +1,18 @@
-# Acessos e ferramentas (EXEMPLO)
+---
+titulo: Acessos e ferramentas
+slug: acessos_ferramentas
+area_dona: Engenharia de Plataforma
+responsavel: plataforma.onboarding
+versao: 1.0
+vigente_ate: 2027-06-30
+tipo: referencia
+status: aprovado
+simulado: true
+papeis: [dev_salesforce, analista_negocios]
+sistemas: [Portal de serviços, Salesforce, GitHub]
+---
+
+# Acessos e ferramentas (SIMULAÇÃO — conteúdo fictício para a PoC do curso)
 
 ## Acessos do primeiro dia
 No primeiro dia, abra um chamado no portal de serviços pedindo: e-mail corporativo,

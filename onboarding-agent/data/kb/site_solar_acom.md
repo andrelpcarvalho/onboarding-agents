@@ -1,4 +1,18 @@
-# SITE Solar e ACOM (EXEMPLO — substituir pelo manual oficial do time Solar)
+---
+titulo: SITE Solar e ACOM
+slug: site_solar_acom
+area_dona: Squad Solar
+responsavel: solar.onboarding
+versao: 1.0
+vigente_ate: 2027-06-30
+tipo: referencia
+status: aprovado
+simulado: true
+papeis: [dev_salesforce, analista_negocios]
+sistemas: [SITE Solar, ACOM]
+---
+
+# SITE Solar e ACOM (SIMULAÇÃO — conteúdo fictício para a PoC do curso)
 
 ## Pré-análise
 A pré-análise é a primeira tela do simulador solar. Ela faz uma avaliação inicial dos
