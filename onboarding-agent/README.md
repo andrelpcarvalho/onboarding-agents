@@ -239,6 +239,10 @@ Rode antes de mudar prompt, modelo, ferramenta ou `.env`. Os casos ficam em
   documento podem não encontrar a resposta e virar lacuna.
 - **Uma instância só:** o SQLite pede um único processo com disco persistente.
 - **Prompt injection** protegido só por instrução no prompt.
+- **CPFs de homologação sem máscara:** os CPFs de `data/homolog_data.yaml` são a única exceção ao
+  mascaramento de PII (o Tutor precisa entregá-los). Na PoC eles são gerados por
+  `scripts/gen_homolog_cpfs.py` e o `make check` exige `simulado: true` e dígito verificador válido;
+  o risco só volta se alguém trocar por CPF real, por isso o arquivo tem revisão obrigatória no PR.
 - **Missão por autodeclaração:** descrever a tela é conferido por palavra-chave; o Tutor não
   enxerga o SITE nem o ACOM. A evidência forte é o número da proposta igual nos dois sistemas.
 
