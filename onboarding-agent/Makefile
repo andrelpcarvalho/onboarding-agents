@@ -2,7 +2,7 @@ PY := .venv/bin/python
 ADK := .venv/bin/adk
 SERVICES := --session_service_uri sqlite:///.adk/sessions.db --memory_service_uri sqlite:///.adk/memory.db
 
-.PHONY: setup test lint web chat curate approve gaps backup check new-role inbox buddy eval eval-stable eval-trajectory eval-behavior eval-report eval-history
+.PHONY: setup test lint web chat curate approve gaps backup check new-role inbox buddy eval eval-stable eval-trajectory eval-behavior eval-report eval-history demo-setup demo-chat demo-web demo-missao
 
 setup:
 	python3.11 -m venv .venv
@@ -82,3 +82,20 @@ eval:
 eval-stable:
 	@$(MAKE) --no-print-directory eval; r1=$$?; echo '--- 2ª rodada ---'; \
 	$(MAKE) --no-print-directory eval; r2=$$?; exit $$(( r1 || r2 ))
+
+# ---- demo da PoC (dados SIMULADOS em .adk/demo/, separados do uso normal)
+DEMO_ENV := ONBOARDING_CATALOG_DB=.adk/demo/catalog.db ONBOARDING_SESSIONS_DB=.adk/demo/sessions.db ONBOARDING_MEMORY_DB=.adk/demo/memory.db ONBOARDING_QUIZ_SEED=7
+DEMO_USER ?= demo.ana
+
+demo-setup:
+	$(DEMO_ENV) $(PY) scripts/demo_setup.py
+
+demo-chat:
+	$(DEMO_ENV) $(PY) scripts/chat.py --user $(if $(USER_ID),$(USER_ID),$(DEMO_USER))
+
+demo-web:
+	$(DEMO_ENV) $(ADK) web agents --session_service_uri sqlite:///.adk/demo/sessions.db --memory_service_uri sqlite:///.adk/demo/memory.db
+
+# plano B: comportamento da missão sem chamar o modelo
+demo-missao:
+	$(PY) scripts/demo_missao.py --tropecos

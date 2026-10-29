@@ -158,6 +158,16 @@ documentos da sua empresa ([guia do autor](docs/2-autor-de-conteudo.md)).
 
 ---
 
+### Demo com dados simulados
+
+```bash
+make demo-setup     # materiais aprovados + papel e buddy dos usuários de demo, em .adk/demo/
+make demo-chat      # conversa como demo.ana; USER_ID=demo.bruno para o analista
+make demo-missao    # plano B: a missão decidida por código, sem chamar o modelo
+```
+
+Roteiro de 5 minutos em [`docs/7-roteiro-demo.md`](docs/7-roteiro-demo.md).
+
 ## Guias por persona
 
 | Para quem | Guia |
