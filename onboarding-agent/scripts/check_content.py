@@ -1,4 +1,5 @@
-"""Valida papéis (data/roles), missões (data/missions) e base (data/kb) antes de gerar materiais.
+"""Valida papéis (data/roles), missões (data/missions), base (data/kb, pelo checklist em
+data/kb_checklist.yaml) e massa de homologação antes de gerar materiais.
 
 Uso:
     python scripts/check_content.py        # ou: make check
@@ -16,6 +17,7 @@ from pydantic import ValidationError
 
 from onboarding_core import kb
 from onboarding_core.config import KB_DIR, MISSIONS_DIR, ROLES_DIR
+from onboarding_core.kb_checklist import check_document, check_homolog_data
 from onboarding_core.roles import load_roles
 from onboarding_core.schemas import Mission, Role
 
@@ -23,16 +25,19 @@ KNOWN_HELPERS = {"get_test_cpf"}
 
 
 def check_kb(errors: list[str], warnings: list[str]) -> None:
+    """Checklist do documento de input (data/kb_checklist.yaml) em cada arquivo da base."""
     files = sorted(KB_DIR.glob("*.md"))
     if not files:
         errors.append(f"nenhum documento em {KB_DIR}")
     for f in files:
-        text = f.read_text(encoding="utf-8")
-        if "\n## " not in "\n" + text:
-            warnings.append(f"kb/{f.name}: sem seções '## '; o arquivo inteiro vira uma única fonte")
-        if "TODO" in text:
-            warnings.append(f"kb/{f.name}: contém TODO")
-    print(f"base de conhecimento: {len(files)} arquivo(s), {len(kb.load_chunks())} seção(ões) citáveis")
+        r = check_document(f)
+        errors += [f"kb/{f.name}: {e}" for e in r.errors]
+        warnings += [f"kb/{f.name}: {w}" for w in r.warnings]
+    h = check_homolog_data()
+    errors += [f"homolog_data.yaml: {e}" for e in h.errors]
+    warnings += [f"homolog_data.yaml: {w}" for w in h.warnings]
+    print(f"base de conhecimento: {len(files)} arquivo(s), {len(kb.load_chunks())} seção(ões) "
+          "citáveis (só documentos aprovados e vigentes)")
 
 
 def check_role(path, errors: list[str], warnings: list[str], seen_ids: set[str]) -> None:

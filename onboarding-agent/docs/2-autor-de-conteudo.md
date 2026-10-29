@@ -40,9 +40,22 @@ Todos os comandos rodam na pasta do projeto, já instalado pelo [responsável](1
 
 ## 2. Escrever a base de conhecimento
 
-Um arquivo `.md` por assunto em `data/kb/`:
+Um arquivo `.md` por assunto em `data/kb/`, com **metadados no topo** (o checklist do documento,
+em `data/kb_checklist.yaml`). Sem eles o `make check` reprova o arquivo; com `status: rascunho` ou
+`vigente_ate` vencido, o documento fica **fora da busca** do Tutor.
 
 ```markdown
+---
+titulo: Ferramentas de QA
+slug: ferramentas_qa            # igual ao nome do arquivo
+area_dona: Squad QA
+responsavel: fulano.qa
+versao: 1.0
+vigente_ate: 2027-06-30         # vencido sai da busca
+tipo: referencia                # referencia | procedimento
+status: aprovado                # rascunho | aprovado
+simulado: true                  # PoC do curso: conteúdo fictício
+---
 # Ferramentas de QA
 
 ## Ferramenta de testes automatizados
@@ -53,6 +66,11 @@ e rodam toda noite contra o ambiente de UAT.
 Bugs são abertos no Jira, projeto QA, com passos para reproduzir, ambiente e evidência
 (print ou vídeo). Bug de severidade alta também deve ser avisado no canal #qa-urgente.
 ```
+
+**Procedimento** (`tipo: procedimento`, um "como fazer") tem 5 seções obrigatórias: `## Objetivo`,
+`## Pré-requisitos`, `## Passo a passo` (lista numerada), `## Como saber que deu certo` e
+`## Onde tirar dúvidas`. Exemplo: `data/kb/solar_originar_proposta.md`. CPF ou cartão no texto
+reprovam o documento; contatos oficiais de times passam.
 
 ### Estrutura
 

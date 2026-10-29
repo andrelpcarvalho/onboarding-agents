@@ -1,0 +1,38 @@
+# Checklist do documento de input (RN-01, RN-02, RN-04).
+# Proposta para a reunião de 29/10: ajuste os campos aqui e rode `make check`.
+# Documento fora do checklist não passa no `make check` (erro) e, se não estiver
+# aprovado ou vigente, também não entra na busca do Tutor (kb.py).
+
+campos_obrigatorios:
+  - titulo        # nome legível
+  - slug          # igual ao nome do arquivo, sem .md
+  - area_dona     # time responsável pelo conteúdo
+  - responsavel   # login de quem mantém o documento
+  - versao
+  - vigente_ate   # AAAA-MM-DD; vencido sai da busca (RN-02)
+  - tipo          # um dos tipos abaixo
+  - status        # rascunho | aprovado
+
+status_validos: [rascunho, aprovado]
+
+tipos:
+  # Conhecimento de apoio (conceitos, regras): seções livres, citáveis como arquivo.md#Seção.
+  referencia:
+    secoes_obrigatorias: []
+    minimo_de_secoes: 1
+  # Como fazer algo: o Tutor e as missões dependem desta estrutura.
+  procedimento:
+    secoes_obrigatorias:
+      - Objetivo
+      - Pré-requisitos
+      - Passo a passo
+      - Como saber que deu certo
+      - Onde tirar dúvidas
+    passo_a_passo_numerado: true
+
+# Identificadores pessoais que bloqueiam o documento (RN-04). Contatos oficiais de
+# times (e-mail, telefone) podem aparecer e não bloqueiam.
+pii_bloqueia: [BR_CPF, CREDIT_CARD]
+
+# Avisos (não bloqueiam)
+aviso_vencimento_dias: 30
